@@ -1,0 +1,135 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: frontend-ingress
+spec:
+  ingressClassName: avi-lb
+  rules:
+    - host: myapp-ingress.gslb.vcnlab01.eng.vmware.com
+      http:
+        paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: frontend
+              port:
+                number: 8080
+  tls:
+    - hosts:
+      - myapp-ingress.gslb.vcnlab01.eng.vmware.com
+      secretName: myapp-ingress-tls
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: myapp-ingress-tls
+  namespace: default
+data:
+  tls.crt: |
+        -----BEGIN CERTIFICATE-----
+        MIIDozCCAougAwIBAgIUInwsV+p2zuZj9iHpzoP7iTOwb4EwDQYJKoZIhvcNAQEL
+        BQAwYTE6MDgGA1UEAwwxbXlhcHAtaW5ncmVzcy5hdmlsYi5vY3AwMS52Y25sYWIw
+        MS5lbmcudm13YXJlLmNvbTEjMCEGA1UECgwaaGVsbG8taW5ncmVzcy10bHMtc2hv
+        cHBpbmcwHhcNMjIxMDIzMjMyODU4WhcNMjUwNDEwMjMyODU4WjBhMTowOAYDVQQD
+        DDFteWFwcC1pbmdyZXNzLmF2aWxiLm9jcDAxLnZjbmxhYjAxLmVuZy52bXdhcmUu
+        Y29tMSMwIQYDVQQKDBpoZWxsby1pbmdyZXNzLXRscy1zaG9wcGluZzCCASIwDQYJ
+        KoZIhvcNAQEBBQADggEPADCCAQoCggEBAJU7sFO68PQwvlxr2WrU5uyay1YgsLA0
+        UaQxt6uZ13iAnNZ9sKGApM4Za3TiHR2u5aSk+WsyPilGVJmWKTMrgRfDCY5FevA5
+        CghKMCoQv5t70s3I+yVm9DWh0Imd2r5Bhf6sy7cmE0X5ULFcdxSZvvyDddJ1uQd3
+        +Gyf3ZwdxGg+ANfulqIC05QEXfBEB0OSM7tVYkPfBkdv/giua+E6mFuID4VjFljm
+        O4haFj2Z3pPLyN3wd3FkV5hqP60l4Hb526E83okUIzN5EKxJDBAZ10BaH4ee+rnt
+        PNC9L0eBaw6xKg+q4/MmS45VmPcGqLfKWrI7I8R7VyDzYzNWoUbnd2cCAwEAAaNT
+        MFEwHQYDVR0OBBYEFDYEFb4eArJzd9dQ0DKT4Y4MTSoMMB8GA1UdIwQYMBaAFDYE
+        Fb4eArJzd9dQ0DKT4Y4MTSoMMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQEL
+        BQADggEBAIiGlC6/afMwU2wqO6F33p7RRTh7z4IzRUzDpHLAMsSTbRUINEHXGW1E
+        poRIk6QuKnVUCo6kqHoZw49s8hOBT5N88npJzIy6wQdd7/tUjos8zV8JG8V76yF6
+        b4Fxlr5ya1isIm2POKeLsI78gUr2y85seJz7/GV/g5ZMHTgdf3L2AJkeVN98VZ94
+        87AII/jg49JWXozGTGNI0WOeVm/uNCz+Xnm0fhDUhr68fjze96kxaj0XRhakHkuJ
+        oyVwNHGa6igREfHAJJNk9hD5StJ9+huDb+9/nYymi2NsPy06ODs+FNWpIUqHkm9U
+        kAF8EwcKBiSsIuBrl2SIP2KijAknBMM=
+        -----END CERTIFICATE-----
+  tls.key: |
+        -----BEGIN PRIVATE KEY-----
+        MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCVO7BTuvD0ML5c
+        a9lq1ObsmstWILCwNFGkMbermdd4gJzWfbChgKTOGWt04h0druWkpPlrMj4pRlSZ
+        likzK4EXwwmORXrwOQoISjAqEL+be9LNyPslZvQ1odCJndq+QYX+rMu3JhNF+VCx
+        XHcUmb78g3XSdbkHd/hsn92cHcRoPgDX7paiAtOUBF3wRAdDkjO7VWJD3wZHb/4I
+        rmvhOphbiA+FYxZY5juIWhY9md6Ty8jd8HdxZFeYaj+tJeB2+duhPN6JFCMzeRCs
+        SQwQGddAWh+Hnvq57TzQvS9HgWsOsSoPquPzJkuOVZj3Bqi3ylqyOyPEe1cg82Mz
+        VqFG53dnAgMBAAECggEAGyr5p9ShpyL0lOjBdRR7UdnAaNactAdiUY0HjgL82iA3
+        7UiGjnBYEHlKOcYsXMoJXpb2HVDRRjxajHds2rbx0nycUb1Oa0tHC0lOSWoxJ8I8
+        F2CecCm1Dcp+p38IYpiVJ08X6yjQW23PBer6dtKilV/tZDowTC7IGCZmdtRofD1+
+        SPpkyGff8lTh8Z3mUyM0kUOQ54gv58tyUSG20r1cWb/i9RllCcWxtE2TDaKaamhJ
+        7EbtYqd2VVg9eNU+mT3NjwXbxXvCfLQFSfwH8X1NgVoSXnlt/PA92vGoK4hfu6i6
+        oX/WYai8dTl3uIny6LRkjlQ0mr9VFDGqldVZRnauAQKBgQDDAFOl4moIxI+rOpNy
+        37rWxAtKm3OQiNH9JP/iTTfdC2TBfyMLqDEUZh3/bDlnBxb/D3ew451n2i9r5253
+        MN/Is8W9Q3mKcR9/gtcucpX0NJ0wAplRRTXNHLNXT2UouZC/VsGtxW9gRiQpt/ww
+        Vr9gWBYnTJSOhvn12OAQUnS3AQKBgQDD6kIM52gI9037+UKjAFBMq5ZYj/UH7fbw
+        a3AOcygQfmo5ugdDrPrbAWDmtRqwTWpOEzNpzjGDIiQxwEtCmTHwJmcKtqta47nB
+        9E+kzuc7SIMznIsBZin6B9vcBTrvvrSGvWgm7wP3tM7+Cl8r9SxsYQmF5kwxFZeG
+        YfP09/fWZwKBgGjKvSkRQrBRiW+YO/Lovox5sCO45GLQ1CA5CPYBTzsPy2acvyWd
+        jjqLIiXIcBSo37fUBRtfRpCv1Pok1d1hu3EtAt/R6ff3ENlCZAcG9wTUXYCWdPQS
+        wHXorYwHE7LN/jaFFfIfftn696YfxHvpslDBJa6a3d62NI/kq4y58xUBAoGAWhaG
+        eNiQBk9yFMPx2HJ0ek0MvXy0+Ah83OEKjhp1+d+niRP58yy/zaU8odn1g8yVbYF2
+        yth9/AbfDeGWufEn/X4rM8n70beV25I0bVyXB7O4YStC4EnSU575gpsFFuliqfK+
+        yehusqD57ednDBeZbdzRPDlCH/AF1U2FmMfNt1ECgYEAgWpKDpOf1d0O7nSVudH3
+        TQjVjwXpoGBwoTXoBenrgiUbPyImq1z1oQZPB5vUgI6WzRsIHHy6VasAfpXfdTFJ
+        +zZ8oOppbe9jGA7hLF3zOoosRRUQoXkG216v2kBDbKjfb9ZkWngFbuXGnJ6Px27s
+        WFc5Rl8tuyWH0L3byHeeV6w=
+        -----END PRIVATE KEY-----
+type: kubernetes.io/tls
+
+
+ certificate: |
+        -----BEGIN CERTIFICATE-----
+        MIIDozCCAougAwIBAgIUInwsV+p2zuZj9iHpzoP7iTOwb4EwDQYJKoZIhvcNAQEL
+        BQAwYTE6MDgGA1UEAwwxbXlhcHAtaW5ncmVzcy5hdmlsYi5vY3AwMS52Y25sYWIw
+        MS5lbmcudm13YXJlLmNvbTEjMCEGA1UECgwaaGVsbG8taW5ncmVzcy10bHMtc2hv
+        cHBpbmcwHhcNMjIxMDIzMjMyODU4WhcNMjUwNDEwMjMyODU4WjBhMTowOAYDVQQD
+        DDFteWFwcC1pbmdyZXNzLmF2aWxiLm9jcDAxLnZjbmxhYjAxLmVuZy52bXdhcmUu
+        Y29tMSMwIQYDVQQKDBpoZWxsby1pbmdyZXNzLXRscy1zaG9wcGluZzCCASIwDQYJ
+        KoZIhvcNAQEBBQADggEPADCCAQoCggEBAJU7sFO68PQwvlxr2WrU5uyay1YgsLA0
+        UaQxt6uZ13iAnNZ9sKGApM4Za3TiHR2u5aSk+WsyPilGVJmWKTMrgRfDCY5FevA5
+        CghKMCoQv5t70s3I+yVm9DWh0Imd2r5Bhf6sy7cmE0X5ULFcdxSZvvyDddJ1uQd3
+        +Gyf3ZwdxGg+ANfulqIC05QEXfBEB0OSM7tVYkPfBkdv/giua+E6mFuID4VjFljm
+        O4haFj2Z3pPLyN3wd3FkV5hqP60l4Hb526E83okUIzN5EKxJDBAZ10BaH4ee+rnt
+        PNC9L0eBaw6xKg+q4/MmS45VmPcGqLfKWrI7I8R7VyDzYzNWoUbnd2cCAwEAAaNT
+        MFEwHQYDVR0OBBYEFDYEFb4eArJzd9dQ0DKT4Y4MTSoMMB8GA1UdIwQYMBaAFDYE
+        Fb4eArJzd9dQ0DKT4Y4MTSoMMA8GA1UdEwEB/wQFMAMBAf8wDQYJKoZIhvcNAQEL
+        BQADggEBAIiGlC6/afMwU2wqO6F33p7RRTh7z4IzRUzDpHLAMsSTbRUINEHXGW1E
+        poRIk6QuKnVUCo6kqHoZw49s8hOBT5N88npJzIy6wQdd7/tUjos8zV8JG8V76yF6
+        b4Fxlr5ya1isIm2POKeLsI78gUr2y85seJz7/GV/g5ZMHTgdf3L2AJkeVN98VZ94
+        87AII/jg49JWXozGTGNI0WOeVm/uNCz+Xnm0fhDUhr68fjze96kxaj0XRhakHkuJ
+        oyVwNHGa6igREfHAJJNk9hD5StJ9+huDb+9/nYymi2NsPy06ODs+FNWpIUqHkm9U
+        kAF8EwcKBiSsIuBrl2SIP2KijAknBMM=
+        -----END CERTIFICATE-----
+    key: |
+        -----BEGIN PRIVATE KEY-----
+        MIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCVO7BTuvD0ML5c
+        a9lq1ObsmstWILCwNFGkMbermdd4gJzWfbChgKTOGWt04h0druWkpPlrMj4pRlSZ
+        likzK4EXwwmORXrwOQoISjAqEL+be9LNyPslZvQ1odCJndq+QYX+rMu3JhNF+VCx
+        XHcUmb78g3XSdbkHd/hsn92cHcRoPgDX7paiAtOUBF3wRAdDkjO7VWJD3wZHb/4I
+        rmvhOphbiA+FYxZY5juIWhY9md6Ty8jd8HdxZFeYaj+tJeB2+duhPN6JFCMzeRCs
+        SQwQGddAWh+Hnvq57TzQvS9HgWsOsSoPquPzJkuOVZj3Bqi3ylqyOyPEe1cg82Mz
+        VqFG53dnAgMBAAECggEAGyr5p9ShpyL0lOjBdRR7UdnAaNactAdiUY0HjgL82iA3
+        7UiGjnBYEHlKOcYsXMoJXpb2HVDRRjxajHds2rbx0nycUb1Oa0tHC0lOSWoxJ8I8
+        F2CecCm1Dcp+p38IYpiVJ08X6yjQW23PBer6dtKilV/tZDowTC7IGCZmdtRofD1+
+        SPpkyGff8lTh8Z3mUyM0kUOQ54gv58tyUSG20r1cWb/i9RllCcWxtE2TDaKaamhJ
+        7EbtYqd2VVg9eNU+mT3NjwXbxXvCfLQFSfwH8X1NgVoSXnlt/PA92vGoK4hfu6i6
+        oX/WYai8dTl3uIny6LRkjlQ0mr9VFDGqldVZRnauAQKBgQDDAFOl4moIxI+rOpNy
+        37rWxAtKm3OQiNH9JP/iTTfdC2TBfyMLqDEUZh3/bDlnBxb/D3ew451n2i9r5253
+        MN/Is8W9Q3mKcR9/gtcucpX0NJ0wAplRRTXNHLNXT2UouZC/VsGtxW9gRiQpt/ww
+        Vr9gWBYnTJSOhvn12OAQUnS3AQKBgQDD6kIM52gI9037+UKjAFBMq5ZYj/UH7fbw
+        a3AOcygQfmo5ugdDrPrbAWDmtRqwTWpOEzNpzjGDIiQxwEtCmTHwJmcKtqta47nB
+        9E+kzuc7SIMznIsBZin6B9vcBTrvvrSGvWgm7wP3tM7+Cl8r9SxsYQmF5kwxFZeG
+        YfP09/fWZwKBgGjKvSkRQrBRiW+YO/Lovox5sCO45GLQ1CA5CPYBTzsPy2acvyWd
+        jjqLIiXIcBSo37fUBRtfRpCv1Pok1d1hu3EtAt/R6ff3ENlCZAcG9wTUXYCWdPQS
+        wHXorYwHE7LN/jaFFfIfftn696YfxHvpslDBJa6a3d62NI/kq4y58xUBAoGAWhaG
+        eNiQBk9yFMPx2HJ0ek0MvXy0+Ah83OEKjhp1+d+niRP58yy/zaU8odn1g8yVbYF2
+        yth9/AbfDeGWufEn/X4rM8n70beV25I0bVyXB7O4YStC4EnSU575gpsFFuliqfK+
+        yehusqD57ednDBeZbdzRPDlCH/AF1U2FmMfNt1ECgYEAgWpKDpOf1d0O7nSVudH3
+        TQjVjwXpoGBwoTXoBenrgiUbPyImq1z1oQZPB5vUgI6WzRsIHHy6VasAfpXfdTFJ
+        +zZ8oOppbe9jGA7hLF3zOoosRRUQoXkG216v2kBDbKjfb9ZkWngFbuXGnJ6Px27s
+        WFc5Rl8tuyWH0L3byHeeV6w=
+        -----END PRIVATE KEY-----
