@@ -3,7 +3,7 @@ kind: Cluster
 #define the cluster
 metadata:
   #user-defined name of the cluster; string
-  name: sander-cluster01
+  name: guest-cluster01
   #kubernetes namespace for the cluster; string
   namespace: ns01
 #define the desired state of cluster
