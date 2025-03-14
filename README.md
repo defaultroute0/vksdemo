@@ -11,5 +11,6 @@ https://github.com/git-for-windows/git/releases/download/v2.48.1.windows.1/Git-2
 ````
 then
 ````
-git clone https://github.com/defaultroute0/vksdemo
+Download the ZIP file
+https://github.com/defaultroute0/vksdemo/archive/refs/heads/main.zip
 ````
