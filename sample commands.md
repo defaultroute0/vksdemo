@@ -23,21 +23,26 @@ kubectl get svc -n ns01
 ````
 Goto the External LB address listed there in browser!
 
-````
-kubectl-vsphere logout
-kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --tanzu-kubernetes-cluster-name guest-cluster01 --vsphere-username administrator@vsphere.local 
-````
-
 Deploy something into the SUP cluster into ns01 namespace
 ````
 kubectl apply -f .\shopping.yaml -n ns01
 kubectl get svc -n ns01
 ````
 
+Deploy something into the GUEST cluster into ns01 namespace
+````
+kubectl-vsphere logout
+kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --tanzu-kubernetes-cluster-name guest-cluster01 --vsphere-username administrator@vsphere.local
+kubectl create ns shopping
+kubectl label --overwrite ns shopping pod-security.kubernetes.io/enforce=privileged
+kubectl apply -f .\shopping.yaml -n shopping
+kubectl get all -n ns01
+````
+
+Can also go to External LB listed in svcs NSX fired up to show shopping is up in guest cluster
 
 
+
+Note
 Deploying into guest cluster need to label the ns to relax security
-````
-kubectl label --overwrite ns NAMESPACE pod-security.kubernetes.io/enforce=privileged
-````
 https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere-supervisor/8-0/using-tkg-service-with-vsphere-supervisor/managing-security-for-tkg-service-clusters/configure-psa-for-tkr-1-25-and-later.html
