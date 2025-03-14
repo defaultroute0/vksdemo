@@ -12,6 +12,9 @@ kubectl-vsphere login
 kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --vsphere-username administrator@vsphere.local
 kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --tanzu-kubernetes-cluster-name ryan-cluster01 --vsphere-username administrator@vsphere.local 
 ````
+
+Deploy something into the SUP cluster into ns01 namespace
+kubectl apply -f .\shopping.yaml -n ns01
 ---
 Deploying into guest cluster need to label the ns to relax security
 ````
