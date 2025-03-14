@@ -2,15 +2,30 @@
 kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --vsphere-username administrator@vsphere.local
 kubectl config get-contexts
 kubectl config use-context 10.80.0.2
+kubectl create ns ns01
 kubectl describe ns ns01
 kubectl get sc
 kubectl get tkr
 kubectl get virtualmachineclass
-kubectl apply -f .\ryan-cluster01.yaml -n ns01
-kubectl apply -f .\sander-cluster01.yaml -n ns01
-kubectl-vsphere login
-kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --vsphere-username administrator@vsphere.local
-kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --tanzu-kubernetes-cluster-name ryan-cluster01 --vsphere-username administrator@vsphere.local 
+````
+
+Make sure namespace in vcenter has permission and content library
+
+Deploy Guest Cluster
+````
+kubectl apply -f .\guest-cluster01.yaml -n ns01
+````
+
+Deploy something into the SUP cluster into ns01 namespace  to show   PODS running inside hypervisor directly
+````
+kubectl apply -f .\shopping.yaml -n ns01
+kubectl get svc -n ns01
+````
+Goto the External LB address listed there in browser!
+
+````
+kubectl-vsphere logout
+kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --tanzu-kubernetes-cluster-name guest-cluster01 --vsphere-username administrator@vsphere.local 
 ````
 
 Deploy something into the SUP cluster into ns01 namespace
@@ -18,7 +33,7 @@ Deploy something into the SUP cluster into ns01 namespace
 kubectl apply -f .\shopping.yaml -n ns01
 kubectl get svc -n ns01
 ````
-Goto the External LB address in browser
+
 
 
 Deploying into guest cluster need to label the ns to relax security
