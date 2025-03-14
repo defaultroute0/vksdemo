@@ -1,3 +1,4 @@
+Poke around, and show off the ns01 in vcenter
 ````
 kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --vsphere-username administrator@vsphere.local
 kubectl config get-contexts
