@@ -48,7 +48,7 @@ spec:
     variables:
       #virtual machine class type and size for cluster nodes
       - name: vmClass
-        value: best-effort-medium
+        value: best-effort-small
       #persistent storage class for cluster nodes
       - name: storageClass
         value: vsan-default-storage-policy
