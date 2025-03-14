@@ -16,7 +16,10 @@ kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --ta
 Deploy something into the SUP cluster into ns01 namespace
 ````
 kubectl apply -f .\shopping.yaml -n ns01
+kubectl get svc -n ns01
 ````
+Goto the External LB address in browser
+
 
 Deploying into guest cluster need to label the ns to relax security
 ````
