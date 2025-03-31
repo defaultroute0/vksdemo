@@ -21,9 +21,17 @@ Deploy something into the SUP cluster into ns01 namespace  to show   PODS runnin
 ````
 kubectl apply -f .\shopping.yaml -n ns01
 kubectl get svc -n ns01
+kubectl get svc -n ns01 -o wide
+kubectl get pods -n ns01 -o wide
+
 ````
+
 Goto the External LB address listed there in browser!
+
 Jump over to NSX explain the NCP
+````
+kubectl get pods -n ns01 --show-labels
+````
 
 
 Deploy something into the GUEST cluster into ns01 namespace
