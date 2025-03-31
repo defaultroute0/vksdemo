@@ -23,7 +23,7 @@ kubectl apply -f .\shopping.yaml -n ns01
 kubectl get svc -n ns01
 ````
 Goto the External LB address listed there in browser!
-
+Jump over to NSX explain the NCP
 
 
 Deploy something into the GUEST cluster into ns01 namespace
