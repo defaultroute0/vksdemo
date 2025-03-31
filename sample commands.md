@@ -29,9 +29,6 @@ kubectl get pods -n ns01 -o wide
 Goto the External LB address listed there in browser!
 
 Jump over to NSX explain the NCP
-````
-kubectl get pods -n ns01 --show-labels
-````
 
 
 Deploy something into the GUEST cluster into ns01 namespace
@@ -42,7 +39,13 @@ kubectl create ns shopping
 kubectl label --overwrite ns shopping pod-security.kubernetes.io/enforce=privileged
 kubectl apply -f .\shopping.yaml -n shopping
 kubectl get all -n ns01
+kubectl get pods -n ns01 | grep -e antrea
+kubectl get pods -n ns01 --show-labels
+kubectl get acnp
+kubectl describe acnp da803eb7-f151-4e59-9663-229f6eb068ce   <<replace with you policy id>>
+kubectl describe acnp da803eb7-f151-4e59-9663-229f6eb068ce | grep -e Action -e From: -e To: -e Protocol -e Block -e Port -e Cidr -e Ingress: -e Egress:
 ````
+
 
 Can also go to External LB listed in svcs NSX fired up to show shopping is up in guest cluster
 
