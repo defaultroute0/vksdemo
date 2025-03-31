@@ -24,11 +24,7 @@ kubectl get svc -n ns01
 ````
 Goto the External LB address listed there in browser!
 
-Deploy something into the SUP cluster into ns01 namespace
-````
-kubectl apply -f .\shopping.yaml -n ns01
-kubectl get svc -n ns01
-````
+
 
 Deploy something into the GUEST cluster into ns01 namespace
 ````
