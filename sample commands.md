@@ -16,14 +16,14 @@ export do="--dry-run=client -oyaml"
 
 Windows
 ````
-New-Alias -Name "k" kubectl
-New-Alias -Name "kg" kubectl get
-New-Alias -Name "kd" kubectl describe
-New-Alias -Name "kaf" kubectl apply -f
-New-Alias -Name "kc" kubectl create
-New-Alias -Name "kdel" kubectl delete --force
-New-Alias -Name "ke" kubectl delete --force
-New-Alias -Name "kr" kubectl run
+New-Alias -Name "k" "kubectl"
+New-Alias -Name "kg" "kubectl get"
+New-Alias -Name "kd" kubectl describe"
+New-Alias -Name "kaf" "kubectl apply -f"
+New-Alias -Name "kc" "ubectl create"
+New-Alias -Name "kdel" "kubectl delete --force"
+New-Alias -Name "ke" "kubectl delete --force"
+New-Alias -Name "kr" "kubectl run"
 ````
 
 
