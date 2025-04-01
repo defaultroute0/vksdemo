@@ -1,3 +1,32 @@
+Alias Up... make your life easier! 
+
+Linux 
+````
+alias k=kubectl
+alias kg="kubectl get"
+alias kd="kubectl describe"
+alias kaf="kubectl apply -f"
+alias kc="kubectl create"
+alias kdel="kubectl delete --force"
+alias ke="kubectl edit"
+alias kr="kubectl run"
+export do="--dry-run=client -oyaml"
+````
+
+
+Windows
+````
+New-Alias -Name "k" kubectl
+New-Alias -Name "kg" kubectl get
+New-Alias -Name "kd" kubectl describe
+New-Alias -Name "kaf" kubectl apply -f
+New-Alias -Name "kc" kubectl create
+New-Alias -Name "kdel" kubectl delete --force
+New-Alias -Name "ke" kubectl delete --force
+New-Alias -Name "kr" kubectl run
+````
+
+
 Poke around, and show off the ns01 in vcenter
 ````
 kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --vsphere-username administrator@vsphere.local
