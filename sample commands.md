@@ -68,9 +68,9 @@ kubectl config use-context guest-cluster01
 kubectl create ns shopping
 kubectl label --overwrite ns shopping pod-security.kubernetes.io/enforce=privileged
 kubectl apply -f .\shopping.yaml -n shopping
-kubectl get all -n ns01
-kubectl get pods -n ns01 | grep -e antrea
-kubectl get pods -n ns01 --show-labels
+kubectl get all -n shopping
+kubectl get pods -n shopping | grep -e antrea
+kubectl get pods -n shopping --show-labels
 kubectl get acnp
 kubectl describe acnp da803eb7-f151-4e59-9663-229f6eb068ce   <<replace with you policy id>>
 kubectl describe acnp da803eb7-f151-4e59-9663-229f6eb068ce | grep -e Action -e From: -e To: -e Protocol -e Block -e Port -e Cidr -e Ingress: -e Egress:
