@@ -65,10 +65,18 @@ Deploy something into the GUEST cluster into ns01 namespace
 kubectl-vsphere logout
 kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --tanzu-kubernetes-cluster-name guest-cluster01 --vsphere-username administrator@vsphere.local
 kubectl config use-context guest-cluster01
+kubectl get nodes
 kubectl create ns shopping
 kubectl label --overwrite ns shopping pod-security.kubernetes.io/enforce=privileged
 kubectl apply -f .\shopping.yaml -n shopping
 kubectl get all -n shopping
+````
+
+Install Antrea Interworking stuff
+````
+kubectl get pods -n 
+kubectl get pod -n kube-system -l component=antrea-controller
+kubectl exec -it antrea-controller-<AsAbove> -n kube-system -- antctl version
 kubectl get pods -n shopping | grep -e antrea
 kubectl get pods -n shopping --show-labels
 kubectl get acnp
