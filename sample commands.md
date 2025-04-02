@@ -73,8 +73,12 @@ kubectl get all -n shopping
 ````
 
 Install Antrea Interworking stuff
+
+WIP: Needs to be manually built or published in SE Field Labs. tried doing it via Advanced SE Fielf Labs Template, needs antrea ent binaries, right vDefend lic. SSL certs made, needs Linux box to use antreansxctl NSX-Antrea interworking integration and gen the certs for principle identies etc
+
+https://techdocs.broadcom.com/us/en/vmware-cis/nsx/vmware-nsx/4-2/administration-guide/integration-of-kubernetes-clusters-with-antrea-cni/registering-an-antrea-kubernetes-cluster-to-nsx/prerequisites-for-registering-an-antrea-kubernetes-cluster-to-nsx.html
+
 ````
-kubectl get pods -n 
 kubectl get pod -n kube-system -l component=antrea-controller
 kubectl exec -it antrea-controller-<AsAbove> -n kube-system -- antctl version
 kubectl get pods -n shopping | grep -e antrea
