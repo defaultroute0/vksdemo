@@ -49,10 +49,12 @@ Make sure namespace in vcenter has permission and content library
 
 Deploy Guest Cluster
 -------
+Get this started while you show stuff in SUP cluster as it takes a while
 ````
 kubectl apply -f .\guest-cluster01.yaml -n ns01
 ````
 
+Now back to SUP Cluster....
 Deploy something into the SUP cluster into ns01 namespace  to show   PODS running inside hypervisor directly
 ````
 kubectl apply -f .\shopping.yaml -n ns01
