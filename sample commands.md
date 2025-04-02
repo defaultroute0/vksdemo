@@ -55,7 +55,10 @@ kubectl apply -f .\guest-cluster01.yaml -n ns01
 ````
 
 Now back to SUP Cluster....
-Deploy something into the SUP cluster into ns01 namespace  to show   PODS running inside hypervisor directly
+
+Deploy into SUP cluster namespace 
+---
+Deploy something into the SUP cluster into ns01 namespace controls / config to show  PODS running inside hypervisor directly
 ````
 kubectl apply -f .\shopping.yaml -n ns01
 kubectl get svc -n ns01
