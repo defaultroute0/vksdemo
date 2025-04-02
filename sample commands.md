@@ -64,6 +64,7 @@ Deploy something into the GUEST cluster into ns01 namespace
 ````
 kubectl-vsphere logout
 kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --tanzu-kubernetes-cluster-name guest-cluster01 --vsphere-username administrator@vsphere.local
+kubectl config use-context guest-cluster01
 kubectl create ns shopping
 kubectl label --overwrite ns shopping pod-security.kubernetes.io/enforce=privileged
 kubectl apply -f .\shopping.yaml -n shopping
