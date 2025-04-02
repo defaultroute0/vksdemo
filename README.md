@@ -1,6 +1,6 @@
 ## Installation
 
-Quick Demo for VKS already running in "3. VCF 5.2.1 Advanced Deployment" SE Field Labs
+Quick Demo for VKS already running in *"VCF 5.2.1 Advanced Deployment" SE Field Labs"*
 
 Download the ZIP file [here](https://github.com/defaultroute0/vksdemo/archive/refs/heads/main.ziptp:// "here")
 
