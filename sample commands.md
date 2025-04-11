@@ -1,9 +1,9 @@
-VKS Demo Commands
+# VKS Demo Commands
 ========
 
 Alias Up... make your life easier! 
 
-Linux 
+## Linux 
 ----------
 ````
 alias k=kubectl
@@ -18,7 +18,7 @@ export do="--dry-run=client -oyaml"
 ````
 
 
-Windows
+## Windows
 ------
 ````
 New-Alias -Name "k" "kubectl"
@@ -32,7 +32,7 @@ New-Alias -Name "kr" "kubectl run"
 ````
 
 
-Poke around, and show off the ns01 in vcenter
+## Poke around, and show off the ns01 in vcenter
 ------
 ````
 kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --vsphere-username administrator@vsphere.local
@@ -47,7 +47,7 @@ kubectl get virtualmachineclass
 
 Make sure namespace in vcenter has permission and content library
 
-Deploy Guest Cluster
+## Deploy Guest Cluster
 -------
 Get this started while you show stuff in SUP cluster as it takes a while
 ````
@@ -56,7 +56,7 @@ kubectl apply -f .\guest-cluster01.yaml -n ns01
 
 Now back to SUP Cluster....
 
-Deploy into SUP cluster namespace 
+## Deploy into SUP cluster namespace 
 ---
 Deploy something into the SUP cluster into ns01 namespace controls / config to show  PODS running inside hypervisor directly
 ````
@@ -70,7 +70,28 @@ kubectl get pods -n ns01 -o wide
 Goto the External LB address listed there in browser!
 
 Jump over to NSX explain the NCP
+### Break the app with netpol and show off in DFW
+````
+kubectl apply -f netpolexample.yaml -n ns01
+kubectl delete -f netpolexample.yaml -n ns01
+````
 
+## Secure Access to app
+- Install Contour as a Sup Service
+- Add envoy endpoint into lab DNS as per below CN (see lab guide)
+- Create a TLS Key pair
+- Create an ingress
+- 
+````
+openssl req -x509 -nodes -days 900 \
+-newkey rsa:2048 \
+-out shopping-ingress-secret.crt \
+-keyout shopping-ingress-secret.key \
+-subj "/CN=shoppingingress.vcf.sddc.lab/O=shopping-ingress-secret"
+
+kubectl create secret tls shopping-ingress-secret --key shopping-ingress-secret.key --cert shopping-ingress-secret.crt -n ns01
+kubectl apply -f shoppingingress.yaml -f shoppingingressnetpol.yaml -n ns01
+````
 
 Deploy something into the GUEST cluster into ns01 namespace
 -----
