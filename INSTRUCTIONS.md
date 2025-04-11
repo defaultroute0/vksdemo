@@ -47,7 +47,7 @@ kubectl get tkr
 kubectl get virtualmachineclass
 ````
 
-Make sure namespace in vcenter has permission and content library
+Make sure namespace in vcenter has permission and content library, vm classes etc
 
 ## Deploy Guest Cluster
 -------
