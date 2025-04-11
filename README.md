@@ -7,8 +7,9 @@ Download the ZIP file and run the yaml off the windows box in a powershell windo
 ### Features
 
 - Walks through governance around Sup Cluster
-- Deploys some pods into SUP cluster
+- Deploys working app into SUP cluster
 - NSX Walkthrough, NCP
+- Hit the app on svc LB and also Ingress
 - Deploys a Guest Cluster for developers
 - Deploys stuff into Guest Cluster
 - General Walkthough 
