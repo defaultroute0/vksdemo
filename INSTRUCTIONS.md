@@ -1,9 +1,9 @@
 # VKS Demo Commands
 ========
 
-Run from hollowconsole in lab
-Install Cygwin as there is no linux box ;(
-Alias Up... make your life easier! 
+- Run from hollowconsole in lab
+- Install Cygwin as there is no linux box ;(
+- Alias Up... make your life easier! 
 
 ## Linux 
 ----------
