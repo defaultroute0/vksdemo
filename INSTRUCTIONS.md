@@ -133,3 +133,10 @@ Can also go to External LB listed in svcs NSX fired up to show shopping is up in
 *Note
 Deploying into guest cluster need to label the ns to relax security*
 https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere-supervisor/8-0/using-tkg-service-with-vsphere-supervisor/managing-security-for-tkg-service-clusters/configure-psa-for-tkr-1-25-and-later.html
+
+
+## Cleanup/Build
+````
+ k delete -f shopping.yaml -f shoppingingress.yaml -f shoppingingressnetpol.yaml -f netpolexample.yaml -n ns01
+ k apply -f shopping.yaml -f shoppingingress.yaml -f shoppingingressnetpol.yaml -n ns01
+````
