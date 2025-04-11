@@ -138,8 +138,9 @@ https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere-supervisor/8-0/us
 ## Cleanup/Build
 ````
 k config use-context 10.80.0.2
-k delete -f guest-cluster02.yaml -n ns01
 k delete -f shopping.yaml -f shoppingingress.yaml -f shoppingingressnetpol.yaml -f netpolexample.yaml -n ns01
-k apply -f guest-cluster02.yaml -n ns01
+k delete -f guest-cluster02.yaml -n ns01
+---
 k apply -f shopping.yaml -f shoppingingress.yaml -f shoppingingressnetpol.yaml -n ns01
+k apply -f guest-cluster02.yaml -n ns01
 ````
