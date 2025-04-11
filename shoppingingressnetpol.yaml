@@ -7,18 +7,30 @@ spec:
     matchLabels:
       app: frontend
   policyTypes:
-  - Ingress
+    - Ingress
   ingress:
-  - from:
-    - namespaceSelector:
-        matchLabels:
-          kubernetes.io/metadata.name: svc-contour-domain-c8
-    - podSelector:
-        matchLabels:
-          app: contour
-    ports:
-    - protocol: TCP
-      port: 8080
-    - protocol: TCP
-      port: 80
-
+    - from:
+        - namespaceSelector:
+            matchLabels:
+              kubernetes.io/metadata.name: svc-contour-domain-c8
+      ports:
+        - port: 8080
+          protocol: TCP
+        - port: 80
+          protocol: TCP
+    - from:
+        - namespaceSelector: {}
+    - from:
+        - podSelector:
+            matchLabels:
+              app: contour
+      ports:
+        - port: 8080
+          protocol: TCP
+        - port: 80
+          protocol: TCP
+    - from:
+        - podSelector: {}
+    - from:
+        - ipBlock:
+            cidr: 0.0.0.0/0
