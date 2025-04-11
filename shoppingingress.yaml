@@ -1,0 +1,26 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: shoppingingress
+  labels:
+    app: shoppingingress
+  annotations:
+    kubernetes.io/ingress.class: contour
+spec:
+#  ingressClassName: contour 
+  rules:
+  - host: shoppingingress.vcf.sddc.lab
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: frontend
+            port:
+              number: 80
+  tls:
+  - hosts:
+      - shoppingingress.vcf.sddc.lab
+    secretName: shopping-ingress-secret
+
