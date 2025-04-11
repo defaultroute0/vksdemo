@@ -82,8 +82,7 @@ kubectl delete -f netpolexample.yaml -n ns01
 - Install Contour as a Sup Service
 - Add envoy endpoint IP address into lab DNS as per below CN (see insitu lab guide)
 - Create a TLS Key pair
-- Create an Ingress and allow contour to talk to namespace pod frontend (pinhole override for zero trust namespace-namespace comms is blocked by default)
-- 
+- Create an Ingress and allow contour to talk to namespace pod frontend (pinhole override for zero trust namespace-namespace comms is blocked by default) 
 ````
 openssl req -x509 -nodes -days 900 \
 -newkey rsa:2048 \
