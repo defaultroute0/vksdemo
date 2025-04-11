@@ -70,7 +70,7 @@ kubectl get pods -n ns01 -o wide
 Goto the External LB address listed there in browser!
 
 Jump over to NSX explain the NCP
-### Break the app with netpol and show off in DFW
+### Break the connection to backend DB with netpol (via NCP) and show off in DFW
 ````
 kubectl apply -f netpolexample.yaml -n ns01
 kubectl delete -f netpolexample.yaml -n ns01
@@ -78,9 +78,9 @@ kubectl delete -f netpolexample.yaml -n ns01
 
 ## Secure Access to app
 - Install Contour as a Sup Service
-- Add envoy endpoint into lab DNS as per below CN (see lab guide)
+- Add envoy endpoint IP address into lab DNS as per below CN (see insitu lab guide)
 - Create a TLS Key pair
-- Create an ingress
+- Create an Ingress and allow contour to talk to namespace pod frontend (pinhole override for zero trust namespace-namespace comms is blocked by default)
 - 
 ````
 openssl req -x509 -nodes -days 900 \
