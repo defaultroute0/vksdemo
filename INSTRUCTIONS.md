@@ -53,7 +53,7 @@ Make sure namespace in vcenter has permission and content library, vm classes (b
 -------
 Get this started while you show stuff in SUP cluster as it takes a while
 ````
-kubectl apply -f .\guest-cluster01.yaml -n ns01
+kubectl apply -f guest-cluster01.yaml -n ns01
 ````
 
 Now back to SUP Cluster....
@@ -62,7 +62,7 @@ Now back to SUP Cluster....
 ---
 Deploy something into the SUP cluster into ns01 namespace controls / config to show  PODS running inside hypervisor directly
 ````
-kubectl apply -f .\shopping.yaml -n ns01
+kubectl apply -f shopping.yaml -n ns01
 kubectl get svc -n ns01
 kubectl get svc -n ns01 -o wide
 kubectl get pods -n ns01 -o wide
@@ -103,7 +103,7 @@ kubectl config use-context guest-cluster01
 kubectl get nodes
 kubectl create ns shopping
 kubectl label --overwrite ns shopping pod-security.kubernetes.io/enforce=privileged
-kubectl apply -f .\shopping.yaml -n shopping
+kubectl apply -f shopping.yaml -n shopping
 kubectl get all -n shopping
 ````
 
