@@ -72,11 +72,18 @@ kubectl get pods -n ns01 -o wide
 Goto the External LB address listed there in browser!
 
 Jump over to NSX explain the NCP
-### Break the connection to backend DB with netpol (via NCP) and show off in DFW
+### Break the connection to backend DB with netpol (via NCP) and show off in DFW, the delete it to restore app connectivity
 ````
 kubectl apply -f netpolexample.yaml -n ns01
 kubectl delete -f netpolexample.yaml -n ns01
 ````
+
+### Apply 5 different netpol's
+then apply a variety of netpol examples, and go and find the 5 lineitems in the DFW to see how each method renders out from yaml to DFW
+````
+kubectl apply -f shoppingingressnetpol.yaml -n ns01
+````
+
 
 ## Secure Access to app
 - Install Contour as a Sup Service
