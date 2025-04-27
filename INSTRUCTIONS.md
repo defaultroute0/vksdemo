@@ -79,7 +79,8 @@ kubectl delete -f netpolexample.yaml -n ns01
 ````
 
 ### Apply 5 different netpol's
-then apply a variety of netpol examples, and go and find the 5 line items in the DFW to see how each method renders out from yaml to DFW. This can be left on as it allows app workings
+then apply a variety of netpol examples to the frontend of the app, and go and find the 5 line items in the DFW to see how each method renders out from yaml to DFW. 
+This can be left on as it allows app workings
 ````
 kubectl apply -f shoppingingressnetpol.yaml -n ns01
 ````
