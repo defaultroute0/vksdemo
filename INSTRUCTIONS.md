@@ -45,6 +45,7 @@ kubectl describe ns ns01
 kubectl get sc
 kubectl get tkr
 kubectl get virtualmachineclass
+kubectl get vmi
 ````
 
 Make sure namespace in vcenter has permission and content library, vm classes (best-effort-small) etc
