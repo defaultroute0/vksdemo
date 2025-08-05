@@ -23,14 +23,29 @@ export do="--dry-run=client -oyaml"
 ## Windows
 ------
 ````
-New-Alias -Name "k" "kubectl"
-New-Alias -Name "kg" "kubectl get"
-New-Alias -Name "kd" "kubectl describe"
-New-Alias -Name "kaf" "kubectl apply -f"
-New-Alias -Name "kc" "kubectl create"
-New-Alias -Name "kdel" "kubectl delete --force"
-New-Alias -Name "ke" "kubectl delete --force"
-New-Alias -Name "kr" "kubectl run"
+Open your $PROFILE:
+
+powershell
+Copy
+Edit
+notepad.exe $PROFILE
+Define Functions Instead of Aliases:
+Replace your New-Alias commands with PowerShell functions like this:
+
+powershell
+Copy
+Edit
+function k { kubectl }
+function kg { kubectl get }
+function kd { kubectl describe }
+function kaf { kubectl apply -f }
+function kc { kubectl create }
+function kdel { kubectl delete --force }
+function ke { kubectl delete --force }
+function kr { kubectl run }
+Save the Profile and Restart PowerShell.
+
+This way, when you type kg, it will invoke kubectl get as expected.
 ````
 
 
