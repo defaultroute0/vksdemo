@@ -22,31 +22,25 @@ export do="--dry-run=client -oyaml"
 
 ## Windows
 ------
-````
 Open your $PROFILE:
+ notepad.exe $PROFILE
 
-powershell
-Copy
-Edit
-notepad.exe $PROFILE
-Define Functions Instead of Aliases:
-Replace your New-Alias commands with PowerShell functions like this:
+add this
 
-powershell
-Copy
-Edit
-function k { kubectl }
-function kg { kubectl get }
-function kd { kubectl describe }
-function kaf { kubectl apply -f }
-function kc { kubectl create }
-function kdel { kubectl delete --force }
-function ke { kubectl delete --force }
-function kr { kubectl run }
+````
+function k    { & kubectl @args }
+function kg   { & kubectl get @args }
+function kd   { & kubectl describe @args }
+function kaf  { & kubectl apply -f @args }
+function kc   { & kubectl create @args }
+function kdel { & kubectl delete --force @args }
+function ke   { & kubectl exec @args }
+function kr   { & kubectl run @args }
+````
 Save the Profile and Restart PowerShell.
+or do ". $PROFILE"
 
 This way, when you type kg, it will invoke kubectl get as expected.
-````
 
 
 ## Poke around, and show off the ns01 in vcenter
