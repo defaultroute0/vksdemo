@@ -41,6 +41,11 @@ or do ". $PROFILE"
 
 This way, when you type kg, it will invoke kubectl get as expected.
 
+## Grab the yaml and *.sh
+````
+Download the zip file from homepage in vksdemo for the yaml and sh scripts
+````
+
 ## Install new vcf-cli k8s wrapper
 ------
 ````
@@ -64,36 +69,43 @@ vcf context create --endpoint 10.1.0.2:443 -username administrator@wld.sso --ca-
   create 'mysup'
 vcf context list
 vcf context use mysup:ns01
+#OLD WAY: kubectl-vsphere login --server=https://10.1.0.2 --insecure-skip-tls-verify --vsphere-username administrator@wld.sso
 ````
 
-
-
-
-
-
-
-## Poke around, and show off the ns01 in vcenter
-------
+## Namespace in vCenter
 ````
-kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --vsphere-username administrator@vsphere.local
-kubectl config get-contexts
-kubectl config use-context 10.80.0.2
-kubectl create ns ns01
-kubectl describe ns ns01
-kubectl get sc
-kubectl get tkr
-kubectl get virtualmachineclass
-kubectl get vmi
+create the ns 'ns01' in vca
+Make sure namespace in vcenter has permission and content library, vm classes (best-effort-small), storage class etc
 ````
 
-Make sure namespace in vcenter has permission and content library, vm classes (best-effort-small) etc
 
 ## Deploy Guest Cluster
 -------
 Get this started while you show stuff in SUP cluster as it takes a while
 ````
+cd /Downloads/vksdemo-vcf9/
 kubectl apply -f guest-cluster01.yaml -n ns01
+kubectl get clusters -n ns01
+vcf cluster list -n ns01
 ````
+
+
+## Poke around, and show off the ns01 in vcenter
+------
+````
+kubectl config get-contexts
+kubectl config use-context mysup:ns01
+kubectl api-resources 
+kubectl api-resources | grep -e vmware 
+kubectl get nodes
+kubectl describe ns ns01
+kubectl get sc
+kube get tkr
+vcf kubernetes-release get
+kubectl get virtualmachineclass
+kubectl get vmi
+````
+ 
 
 Now back to SUP Cluster....
 
@@ -105,7 +117,6 @@ kubectl apply -f shopping.yaml -n ns01
 kubectl get svc -n ns01
 kubectl get svc -n ns01 -o wide
 kubectl get pods -n ns01 -o wide
-
 ````
 
 Goto the External LB address listed there in browser!
@@ -122,6 +133,7 @@ then apply a variety of netpol examples to the frontend of the app, and go and f
 This can be left on as it allows app workings
 ````
 kubectl apply -f shoppingingressnetpol.yaml -n ns01
+kubectl describe netpol -n ns01
 ````
 
 
