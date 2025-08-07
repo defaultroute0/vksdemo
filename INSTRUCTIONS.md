@@ -156,9 +156,8 @@ kubectl apply -f shoppingingress.yaml -f shoppingingressnetpol.yaml -n ns01
 Deploy something into the GUEST cluster into ns01 namespace
 -----
 ````
-kubectl-vsphere logout
-kubectl-vsphere login --server=https://10.80.0.2 --insecure-skip-tls-verify --tanzu-kubernetes-cluster-name guest-cluster01 --vsphere-username administrator@vsphere.local
-kubectl config use-context guest-cluster01
+vcf context create guest-cluster01 --endpoint 10.1.0.2:443 --username administrator@wld.sso --ca-certificate ~/hol/ca/full_chain.crt --workload-cluster-name guest-cluster01 --workload-cluster-namespace ns01 --type k8s
+vcf context use guest-cluster01:guestcluster01
 kubectl get nodes
 kubectl create ns shopping
 kubectl label --overwrite ns shopping pod-security.kubernetes.io/enforce=privileged
