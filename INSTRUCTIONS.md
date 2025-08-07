@@ -49,9 +49,10 @@ Download the zip file from homepage in vksdemo for the yaml and sh scripts
 ## Install new vcf-cli k8s wrapper
 ------
 ````
-# dont // sudo snap install --classic kubectl
 chmod +x install-new-vcf-cli.sh
 ./install-new-vcf-cli.sh
+test 'vcf context list'
+# maybe need // sudo snap install --classic kubectl
 ````
 
 add the plugins
@@ -62,7 +63,7 @@ vcf plugin group get vmware-vcfcli/essentials
 vcf plugin list
 ````
 
-because trust chain doesnt seem intact in this lab, lets feed the cert returned from vca into the chain
+Because trust chain doesnt seem intact in this lab, lets feed the cert returned from vca into the chain
 ````
 openssl s_client -connect 10.1.0.2:443 -showcerts </dev/null 2>/dev/null | awk '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/' > ~/hol/ca/full-chain.crt
 vcf context create --endpoint 10.1.0.2:443 -username administrator@wld.sso --ca-certificate ~/hol/ca/full_chain.crt
@@ -83,9 +84,8 @@ Make sure namespace in vcenter has permission and content library, vm classes (b
 -------
 Get this started while you show stuff in SUP cluster as it takes a while
 ````
-cd /Downloads/vksdemo-vcf9/
-kubectl apply -f guest-cluster01.yaml -n ns01
-kubectl get clusters -n ns01
+cd ~/Downloads/vksdemo-vcf9/
+vcf cluster create -f guest-cluster01.yaml
 vcf cluster list -n ns01
 ````
 
@@ -158,11 +158,13 @@ Deploy something into the GUEST cluster into ns01 namespace
 ````
 vcf context create guest-cluster01 --endpoint 10.1.0.2:443 --username administrator@wld.sso --ca-certificate ~/hol/ca/full_chain.crt --workload-cluster-name guest-cluster01 --workload-cluster-namespace ns01 --type k8s
 vcf context use guest-cluster01:guestcluster01
+   this will take us into the guest-cluster01 deployed into the sup cluster's namespace 'ns01'
 kubectl get nodes
 kubectl create ns shopping
 kubectl label --overwrite ns shopping pod-security.kubernetes.io/enforce=privileged
 kubectl apply -f shopping.yaml -n shopping
 kubectl get all -n shopping
+kubectl get svc -A | grep -e external
 ````
 
 Install Antrea Interworking stuff
@@ -195,10 +197,11 @@ https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere-supervisor/8-0/us
 
 ## Cleanup/Build
 ````
-k config use-context 10.80.0.2
+vcf context use mysup:ns01
 k delete -f shopping.yaml -f shoppingingress.yaml -f shoppingingressnetpol.yaml -f netpolexample.yaml -n ns01
 k delete -f guest-cluster02.yaml -n ns01
 ---
+vcf context use mysup:ns01
 k apply -f shopping.yaml -f shoppingingress.yaml -f shoppingingressnetpol.yaml -n ns01
 k apply -f guest-cluster02.yaml -n ns01
 ````
