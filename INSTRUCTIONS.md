@@ -51,7 +51,7 @@ Download the zip file from homepage in vksdemo for the yaml and sh scripts
 ````
 chmod +x install-new-vcf-cli.sh
 ./install-new-vcf-cli.sh
-test 'vcf context list'
+vcf context list    //to test cli thing works
 # maybe need // sudo snap install --classic kubectl
 ````
 
