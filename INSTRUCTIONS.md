@@ -22,8 +22,7 @@ export do="--dry-run=client -oyaml"
 
 ## Windows
 ------
-Open your $PROFILE:
- notepad.exe $PROFILE
+notepad.exe $PROFILE
 
 add this
 
