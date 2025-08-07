@@ -41,6 +41,36 @@ or do ". $PROFILE"
 
 This way, when you type kg, it will invoke kubectl get as expected.
 
+## Install new vcf-cli k8s wrapper
+------
+````
+# dont // sudo snap install --classic kubectl
+chmod +x install-new-vcf-cli.sh
+./install-new-vcf-cli.sh
+````
+
+add the plugins
+````
+vcf plugin group search
+vcf plugin install --group vmware-vcfcli/essentials
+vcf plugin group get vmware-vcfcli/essentials
+vcf plugin list
+````
+
+because trust chain doesnt seem intact in this lab, lets feed the cert returned from vca into the chain
+````
+openssl s_client -connect 10.1.0.2:443 -showcerts </dev/null 2>/dev/null | awk '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/' > ~/hol/ca/full-chain.crt
+vcf context create --endpoint 10.1.0.2:443 -username administrator@wld.sso --ca-certificate ~/hol/ca/full_chain.crt
+  create 'mysup'
+vcf context list
+vcf context use mysup:ns01
+````
+
+
+
+
+
+
 
 ## Poke around, and show off the ns01 in vcenter
 ------
