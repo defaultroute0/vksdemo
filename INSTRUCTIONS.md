@@ -121,6 +121,17 @@ kubectl get pods -n ns01 -o wide
 
 Goto the External LB address listed there in browser!
 
+## Map the objects created back to the supervisor VPC networking setup
+````
+# Show the External VPC Block(s) consumed by the services
+kubectl get svc -A | grep -e "10.1.0."
+# Show the Interal Blocks for svc within cluster
+kubectl get svc -n ns01
+# Show the Private TG VPC Block(s) consumed by the PODS deployed to the Sup
+kubectl get pods -n ns01 | grep -e "172.16.100."
+# Show the Private VPC Block(s) consumed by the internal ns of the Sup
+kubectl get pods -A | grep -e "172.16.200."
+
 Jump over to NSX explain the NCP
 ### Break the connection to backend DB with netpol (via NCP) and show off in DFW, the delete it to restore app connectivity
 ````
