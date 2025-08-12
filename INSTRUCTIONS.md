@@ -131,8 +131,11 @@ kubectl get svc -n ns01
 kubectl get pods -n ns01 | grep -e "172.16.100."
 # Show the Private VPC Block(s) consumed by the internal ns of the Sup
 kubectl get pods -A | grep -e "172.16.200."
+````
 
 Jump over to NSX explain the NCP
+
+
 ### Break the connection to backend DB with netpol (via NCP) and show off in DFW, the delete it to restore app connectivity
 ````
 kubectl apply -f netpolexample.yaml -n ns01
