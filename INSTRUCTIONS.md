@@ -130,7 +130,7 @@ Goto the External LB address listed there in browser!
 
 GOTO >> SUPERVISOR MANAGEMENT >>  NS01 >> CONFIGURE >> General
 
-# Show the External VPC Block(s) / POD CIDR consumed by the ext svc, svc, pods  in NS01
+### Show the External VPC Block(s) / POD CIDR consumed by the ext svc, svc, pods  in NS01
 ````
 kubectl get pods -n ns01 -o wide    ##things in whole ns can talk via TGW range, 172.16.100 range
 kubectl get svc -n ns01     ##things in ns - internal svc 10.96.0.0 and external svc 10.1.0.x
