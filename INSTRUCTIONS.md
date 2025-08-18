@@ -134,13 +134,14 @@ kubectl get pods -A | grep -e "172.16.200."
 ````
 
 Jump over to NSX explain the NCP
-
+(VPC >> Network Services >> NSX Load Balancer))
 
 ### Break the connection to backend DB with netpol (via NCP) and show off in DFW, the delete it to restore app connectivity
 ````
 kubectl apply -f netpolexample.yaml -n ns01
 kubectl delete -f netpolexample.yaml -n ns01
 ````
+Look in the VPC E/W Rules
 
 ### Apply 5 different netpol's
 then apply a variety of netpol examples to the frontend of the app, and go and find the 5 line items in the DFW to see how each method renders out from yaml to DFW. 
