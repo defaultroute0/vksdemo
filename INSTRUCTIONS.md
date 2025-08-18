@@ -220,6 +220,8 @@ https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere-supervisor/8-0/us
 vcf context use mysup:ns01
 k delete -f shopping.yaml -f shoppingingress.yaml -f shoppingingressnetpol.yaml -f netpolexample.yaml -n ns01
 k delete -f guest-cluster02.yaml -n ns01
+vcf context delete guest-cluster02:guest-cluster02 -y
+vcf context delete guest-cluster02 -y
 ---
 vcf context use mysup:ns01
 k apply -f shopping.yaml -f shoppingingress.yaml -f shoppingingressnetpol.yaml -n ns01
