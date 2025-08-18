@@ -225,3 +225,4 @@ vcf context use mysup:ns01
 k apply -f shopping.yaml -f shoppingingress.yaml -f shoppingingressnetpol.yaml -n ns01
 k apply -f guest-cluster02.yaml -n ns01
 ````
+
