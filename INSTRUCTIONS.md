@@ -79,6 +79,11 @@ create the ns 'ns01' in vca
 Make sure namespace in vcenter has permission and content library, vm classes (best-effort-small), storage class etc
 ````
 
+## Optional Resume LOGIN if you come back
+````
+vcf refresh context
+VMware123!VMware123!
+````
 
 ## Deploy Guest Cluster
 -------
