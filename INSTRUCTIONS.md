@@ -226,5 +226,6 @@ vcf context delete guest-cluster02 -y
 vcf context use mysup:ns01
 k apply -f shopping.yaml -f shoppingingress.yaml -f shoppingingressnetpol.yaml -n ns01
 k apply -f guest-cluster02.yaml -n ns01
+vcf cluster list -n ns01
 ````
 
