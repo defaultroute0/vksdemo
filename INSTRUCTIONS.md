@@ -127,7 +127,7 @@ kubectl get pods -n ns01 -o wide
 Goto the External LB address listed there in browser!
 
 ## Map the objects created back to the supervisor VPC networking setup
-````
+
 GOTO >> SUPERVISOR MANAGEMENT >>  NS01 >> CONFIGURE >> General
 
 # Show the External VPC Block(s) / POD CIDR consumed by the ext svc, svc, pods  in NS01
