@@ -1,4 +1,4 @@
-# VKS Demo Commands (VCF9)
+# VKS BUILD / DEMO (VCF9)
 ========
 
 - Run from hollowconsole in lab
