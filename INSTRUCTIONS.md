@@ -128,14 +128,13 @@ Goto the External LB address listed there in browser!
 
 ## Map the objects created back to the supervisor VPC networking setup
 ````
-# Show the External VPC Block(s) consumed by the services
-kubectl get svc -A | grep -e "10.1.0."
-# Show the Interal Blocks for svc within cluster
-kubectl get svc -n ns01
-# Show the Private TG VPC Block(s) consumed by the PODS deployed to the Sup
-kubectl get pods -n ns01 -o wide | grep -e "172.16.100."
-# Show the Private VPC Block(s) consumed by the internal ns of the Sup
-kubectl get pods -A -o wide | grep -e "172.16.200."
+GOTO >> SUPERVISOR MANAGEMENT >>  NS01 >> CONFIGURE >> General
+
+# Show the External VPC Block(s) / POD CIDR consumed by the ext svc, svc, pods  in NS01
+````
+kubectl get pods -n ns01 -o wide    ##things in whole ns can talk via TGW range, 172.16.100 range
+kubectl get svc -n ns01     ##things in ns - internal svc 10.96.0.0 and external svc 10.1.0.x
+kubectl get pod -A -o wide | grep -e 200    ##internal backend things which can only talk witin their special system namespace  
 ````
 
 Jump over to NSX explain the NCP
