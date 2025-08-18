@@ -133,9 +133,9 @@ kubectl get svc -A | grep -e "10.1.0."
 # Show the Interal Blocks for svc within cluster
 kubectl get svc -n ns01
 # Show the Private TG VPC Block(s) consumed by the PODS deployed to the Sup
-kubectl get pods -n ns01 | grep -e "172.16.100."
+kubectl get pods -n ns01 -o wide | grep -e "172.16.100."
 # Show the Private VPC Block(s) consumed by the internal ns of the Sup
-kubectl get pods -A | grep -e "172.16.200."
+kubectl get pods -A -o wide | grep -e "172.16.200."
 ````
 
 Jump over to NSX explain the NCP
