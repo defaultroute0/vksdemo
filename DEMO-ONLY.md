@@ -54,6 +54,12 @@ kubectl get svc -n ns01     ##things in ns - internal svc 10.96.0.0 and external
 kubectl get pod -A -o wide | grep -e 200    ##internal backend things which can only talk witin their special system namespace  
 ````
 
+We can create a VM via kind: VirtualMachine
+````
+kubectl apply -f mydemovm.yaml -n ns01
+````
+
+
 Jump over to NSX explain the NCP
 (VPC >> Network Services >> NSX Load Balancer))
 
