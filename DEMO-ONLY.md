@@ -44,7 +44,6 @@ kubectl get pods -n ns01 -o wide
 Goto the External LB address listed there in browser!
 
 ## Map the objects created back to the supervisor VPC networking setup
-
 GOTO >> SUPERVISOR MANAGEMENT >>  NS01 >> CONFIGURE >> General
 
 ## Show the External VPC Block(s) / POD CIDR consumed by the ext svc, svc, pods  in NS01
@@ -54,7 +53,7 @@ kubectl get svc -n ns01     ##things in ns - internal svc 10.96.0.0 and external
 kubectl get pod -A -o wide | grep -e 200    ##internal backend things which can only talk witin their special system namespace  
 ````
 
-Jump over to NSX explain the NCP
+## Jump over to NSX explain the NCP
 (VPC >> Network Services >> NSX Load Balancer))
 
 ## Create a VM, via SUP declaritive API
@@ -63,15 +62,14 @@ We can create a VM via kind: VirtualMachine
 cat mydemovm.yaml
 kubectl apply -f mydemovm.yaml -n ns01
 ````
-
-### Break the connection to backend DB with netpol (via NCP) and show off in DFW, the delete it to restore app connectivity
+## Break the connection to backend DB with netpol (via NCP) and show off in DFW, the delete it to restore app connectivity
 ````
 kubectl apply -f netpolexample.yaml -n ns01
 kubectl delete -f netpolexample.yaml -n ns01
 ````
 Look in the VPC E/W Rules
 
-### Apply 5 different netpol's
+## Apply 5 different netpol's
 then apply a variety of netpol examples to the frontend of the app, and go and find the 5 line items in the DFW to see how each method renders out from yaml to DFW. 
 This can be left on as it allows app workings
 ````
@@ -79,9 +77,7 @@ kubectl apply -f shoppingingressnetpol.yaml -n ns01
 kubectl describe netpol -n ns01
 ````
 
-
-
-Deploy something into the GUEST cluster into ns01 namespace
+## Deploy something into the GUEST cluster into ns01 namespace
 -----
 ````
 vcf context create guest-cluster01 --endpoint 10.1.0.2:443 --username administrator@wld.sso --ca-certificate ~/hol/ca/full_chain.crt --workload-cluster-name guest-cluster01 --workload-cluster-namespace ns01 --type k8s
