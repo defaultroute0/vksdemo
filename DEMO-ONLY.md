@@ -3,7 +3,7 @@
 
 ## Optional Resume LOGIN if you come back
 ````
-vcf refresh context
+vcf context refresh
 VMware123!VMware123!
 ````
 
