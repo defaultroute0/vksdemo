@@ -73,6 +73,12 @@ vcf context use mysup:ns01
 #OLD WAY: kubectl-vsphere login --server=https://10.1.0.2 --insecure-skip-tls-verify --vsphere-username administrator@wld.sso
 ````
 
+## Install LCI in vCenter
+````
+vCenter >> Supervisor Management >> Services  >> Add New Service
+see file:  lci-sys-9.0.0.yaml
+````
+
 ## Namespace in vCenter
 ````
 create the ns 'ns01' in vca
