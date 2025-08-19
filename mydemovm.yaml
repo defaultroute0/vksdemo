@@ -1,0 +1,44 @@
+apiVersion: vmoperator.vmware.com/v1alpha3
+kind: VirtualMachine
+metadata:
+  name: mydemovm
+  namespace: ns01
+  labels:
+    topology.kubernetes.io/zone: z-wld-a
+spec:
+  className: best-effort-small              # must be bound to ns01
+  imageName: vmi-4649eb156bbdebbdb          # must be visible in ns01
+  storageClass: vsan-default-storage-policy
+  powerState: PoweredOn
+  bootstrap:
+    cloudInit:
+      # Reference the raw cloud-config stored in the Secret below
+      rawCloudConfig:
+        name: my-vm-bootstrap-data
+        key: user-data
+
+---
+apiVersion: v1
+kind: Secret
+metadata:
+  name: my-vm-bootstrap-data
+  namespace: ns01
+stringData:
+  user-data: |
+    #cloud-config
+    users:
+    - default
+    - name: xyz..
+      primary_group: xyz..
+      groups: users
+      ssh_authorized_keys:
+      - ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDSL7uWGj...
+    runcmd:
+    - "ls /"
+    - [ "ls", "-a", "-l", "/" ]
+    write_files:
+    - path: /etc/my-plaintext
+      permissions: '0644'
+      owner: root:root
+      content: |
+        Hello, world.
