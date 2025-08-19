@@ -130,7 +130,7 @@ Goto the External LB address listed there in browser!
 
 GOTO >> SUPERVISOR MANAGEMENT >>  NS01 >> CONFIGURE >> General
 
-### Show the External VPC Block(s) / POD CIDR consumed by the ext svc, svc, pods  in NS01
+## Show the External VPC Block(s) / POD CIDR consumed by the ext svc, svc, pods  in NS01
 ````
 kubectl get pods -n ns01 -o wide    ##things in whole ns can talk via TGW range, 172.16.100 range
 kubectl get svc -n ns01     ##things in ns - internal svc 10.96.0.0 and external svc 10.1.0.x
@@ -140,14 +140,22 @@ kubectl get pod -A -o wide | grep -e 200    ##internal backend things which can 
 Jump over to NSX explain the NCP
 (VPC >> Network Services >> NSX Load Balancer))
 
-### Break the connection to backend DB with netpol (via NCP) and show off in DFW, the delete it to restore app connectivity
+
+## Create a VM, via SUP declaritive API
+We can create a VM via kind: VirtualMachine
+````
+cat mydemovm.yaml
+kubectl apply -f mydemovm.yaml -n ns01
+````
+
+## Break the connection to backend DB with netpol (via NCP) and show off in DFW, the delete it to restore app connectivity
 ````
 kubectl apply -f netpolexample.yaml -n ns01
 kubectl delete -f netpolexample.yaml -n ns01
 ````
 Look in the VPC E/W Rules
 
-### Apply 5 different netpol's
+## Apply 5 different netpol's
 then apply a variety of netpol examples to the frontend of the app, and go and find the 5 line items in the DFW to see how each method renders out from yaml to DFW. 
 This can be left on as it allows app workings
 ````
