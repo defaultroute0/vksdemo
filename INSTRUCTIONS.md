@@ -222,17 +222,18 @@ Deploying into guest cluster need to label the ns to relax security*
 https://techdocs.broadcom.com/us/en/vmware-cis/vsphere/vsphere-supervisor/8-0/using-tkg-service-with-vsphere-supervisor/managing-security-for-tkg-service-clusters/configure-psa-for-tkr-1-25-and-later.html
 
 
-## Cleanup/Build
+## Cleanup
 ````
 vcf context use mysup:ns01
 k delete -f shopping.yaml -f shoppingingress.yaml -f shoppingingressnetpol.yaml -f netpolexample.yaml -n ns01
 k delete -f guest-cluster02.yaml -n ns01
 vcf context delete guest-cluster02:guest-cluster02 -y
 vcf context delete guest-cluster02 -y
----
+````
+## Build
+````
 vcf context use mysup:ns01
 k apply -f shopping.yaml -f shoppingingress.yaml -f shoppingingressnetpol.yaml -n ns01
 k apply -f guest-cluster02.yaml -n ns01
 vcf cluster list -n ns01
 ````
-
