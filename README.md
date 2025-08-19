@@ -8,8 +8,10 @@ Download the ZIP file from browser inside the lab (from Green code button) and r
 
 - Walks through governance around Sup Cluster
 - Deploys working app into SUP cluster
-- NSX Walkthrough, NCP
+- NSX /VPC Walkthrough, NCP
+- Netpol and DFW walkthrough
 - Hit the app on svc LB and also Ingress
+- Can deploy a VM with cloud-init via yaml into sup's declarative API
 - Deploys a Guest Cluster for developers
 - Deploys stuff into Guest Cluster
 - General Walkthough 
