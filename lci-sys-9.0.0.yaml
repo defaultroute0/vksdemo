@@ -1,0 +1,51 @@
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: Package
+metadata:
+  name: cci-ns.vmware.com.9.0.0+8594cb6b
+spec:
+  refName: cci-ns.vmware.com
+  version: 9.0.0+8594cb6b
+  template:
+    spec:
+      fetch:
+      - imgpkgBundle:
+          image: projects.packages.broadcom.com/vsphere/iaas/lci-service/9.0.0/lci-service:9.0.0-8594cb6b
+      template:
+      - ytt:
+          paths:
+          - config/
+          ignoreUnknownComments: true
+      - kbld:
+          paths:
+          - '-'
+          - .imgpkg/images.yml
+      deploy:
+      - kapp: {}
+  valuesSchema:
+    openAPIv3:
+      type: object
+      additionalProperties: false
+      description: OpenAPIv3 Schema for Consumption Interface
+      properties:
+        namespace:
+          type: string
+          description: Namespace of the component
+          default: cci-svc
+        podVMSupported:
+          type: boolean
+          description: This field indicates whether PodVMs are supported on the environment
+          default: false
+        virtualIP:
+          type: string
+          description: IP address of the Kubernetes LoadBalancer type service fronting the apiservers.
+          default: ""
+---
+apiVersion: data.packaging.carvel.dev/v1alpha1
+kind: PackageMetadata
+metadata:
+  name: cci-ns.vmware.com
+spec:
+  displayName: Local Consumption Interface
+  shortDescription: Provides the Local Consumption Interface for Namespaces within vSphere Client.
+  longDescription: Provides the Local Consumption Interface for Namespaces within vSphere Client.
+  providerName: VMware
