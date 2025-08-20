@@ -10,7 +10,7 @@ VMware123!VMware123!
 ````
 
 ## Show Supervisor Management in vca
-- how sup is configured
+- how sup is configured.  TABS in SUPERVISOR MANAGEMRNT
 - how we create a ns (ns02)
 - show how this is rendered in nsx quickly (vpc)
 
