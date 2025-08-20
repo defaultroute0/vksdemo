@@ -30,9 +30,10 @@ kubectl get virtualmachineclass
 kubectl get vmi
 ````
  
-
+````
 - Now back to SUP Cluster
 - Show ns01 >> CONFIGURE >> Resource and Object Limits
+````
 
 ## Deploy into SUP cluster namespace 
 ---
