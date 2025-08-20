@@ -27,6 +27,7 @@ kubectl get sc
 kube get tkr
 vcf kubernetes-release get
 kubectl get virtualmachineclass
+   >> create new vmclass and add GPU
 kubectl get vmi
 ````
  
