@@ -71,6 +71,7 @@ We can create a VM via kind: VirtualMachine
 ````
 cat mydemovm.yaml
 kubectl apply -f mydemovm.yaml -n ns01
+kubectl get vm -n ns01
 ````
 ## Break the connection to backend DB with netpol (via NCP) and show off in DFW, the delete it to restore app connectivity
 ````
