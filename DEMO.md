@@ -11,8 +11,7 @@ VMware123!VMware123!
 
 ## Show Supervisor Management in vca
 - how sup is configured.  TABS in SUPERVISOR MANAGEMRNT
-- how we create a ns (ns02)
-- show how this is rendered in nsx quickly (vpc)
+
 
 ## Poke around, and show off the ns01 in vcenter
 ------
@@ -50,7 +49,9 @@ Goto the vca ns01 >> RESOURCES tab
 
 ## Map the objects created back to the supervisor VPC networking setup
 GOTO >> SUPERVISOR MANAGEMENT >>  NS01 >> CONFIGURE >> General
-
+- how we create a ns (ns02)
+- show how this is rendered in nsx quickly (vpc)
+  
 ## Show the External VPC Block(s) / POD CIDR consumed by the ext svc, svc, pods  in NS01
 ````
 kubectl get pods -n ns01 -o wide    ##things in whole ns can talk via TGW range, 172.16.100 range
