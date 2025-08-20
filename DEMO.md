@@ -1,6 +1,8 @@
 # VKS Demo Commands (VCF9)
 ========
 
+# DEMO1
+
 ## Optional Resume LOGIN if you come back
 ````
 vcf context refresh
@@ -56,6 +58,9 @@ kubectl get pod -A -o wide | grep -e 200    ##internal backend things which can 
 ## Jump over to NSX explain the NCP
 (VPC >> Network Services >> NSX Load Balancer))
 
+
+# DEMO2
+
 ## Create a VM, via SUP declaritive API
 We can create a VM via kind: VirtualMachine
 ````
@@ -75,6 +80,12 @@ This can be left on as it allows app workings
 ````
 kubectl apply -f shoppingingressnetpol.yaml -n ns01
 kubectl describe netpol -n ns01
+````
+
+## Deploy a Guest CLuster via VKS
+````
+k apply -f guest-cluster02.yaml -n ns01
+vcf cluster list -n ns01
 ````
 
 ## Deploy something into the GUEST cluster into ns01 namespace
