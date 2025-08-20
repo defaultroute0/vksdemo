@@ -44,6 +44,7 @@ kubectl get pods -n ns01 -o wide
 ````
 
 Goto the External LB address listed there in browser!
+Goto the vca ns01 >> RESOURCES tab 
 
 ## Map the objects created back to the supervisor VPC networking setup
 GOTO >> SUPERVISOR MANAGEMENT >>  NS01 >> CONFIGURE >> General
