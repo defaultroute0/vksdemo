@@ -72,6 +72,8 @@ vcf context create mysup --endpoint 10.1.0.2:443 --username administrator@wld.ss
   VCFA ORG:  "showcase-all-apps"  
 vcf context list
 vcf context use mysup:ns01
+or
+vcf context use mysup
 #OLD WAY: kubectl-vsphere login --server=https://10.1.0.2 --insecure-skip-tls-verify --vsphere-username administrator@wld.sso
 ````
 
