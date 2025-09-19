@@ -46,6 +46,11 @@ This way, when you type kg, it will invoke kubectl get as expected.
 Download the zip file from homepage in vksdemo for the yaml and sh scripts
 ````
 
+## Create the ns01  
+````
+do it in vca
+````
+
 ## Install new vcf-cli k8s wrapper
 ------
 ````
