@@ -66,8 +66,10 @@ vcf plugin list
 Because trust chain doesnt seem intact in this lab, lets feed the cert returned from vca into the chain
 ````
 openssl s_client -connect 10.1.0.2:443 -showcerts </dev/null 2>/dev/null | awk '/-----BEGIN CERTIFICATE-----/,/-----END CERTIFICATE-----/' > ~/hol/ca/full-chain.crt
-vcf context create --endpoint 10.1.0.2:443 -username administrator@wld.sso --ca-certificate ~/hol/ca/full-chain.crt
-  create 'mysup'
+vcf context create mysup --endpoint 10.1.0.2:443 --username administrator@wld.sso --ca-certificate ~/hol/ca/full-chain.crt
+or try 
+vcf context create mysup --endpoint 10.1.0.2:443 --username administrator@wld.sso --insecure-skip-tls-verify
+  VCFA ORG:  "showcase-all-apps"  
 vcf context list
 vcf context use mysup:ns01
 #OLD WAY: kubectl-vsphere login --server=https://10.1.0.2 --insecure-skip-tls-verify --vsphere-username administrator@wld.sso
