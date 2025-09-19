@@ -96,7 +96,7 @@ Make sure namespace in vcenter has permission and content library, vm classes (b
 
 ## Optional Resume LOGIN if you come back
 ````
-vcf refresh context
+vcf context refresh
 VMware123!VMware123!
 ````
 
