@@ -113,7 +113,7 @@ kubectl get svc -A | grep -e external
 ````
 vcf context use mysup:ns01
 k delete -f shopping.yaml -f shoppingingress.yaml -f shoppingingressnetpol.yaml -f netpolexample.yaml -f mydemovm.yaml -n ns01
-k delete -f guest-cluster02.yaml -n ns01
+k delete -f guest-cluster02.yaml -n ns01 --wait=false
 vcf context delete guest-cluster02:guest-cluster02 -y
 vcf context delete guest-cluster02 -y
 ````
