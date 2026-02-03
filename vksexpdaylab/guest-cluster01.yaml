@@ -1,0 +1,39 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: guest-cluster01
+spec:
+  clusterNetwork:
+    pods:
+      cidrBlocks:
+        - 192.168.156.0/20
+    services:
+      cidrBlocks:
+        - 10.96.0.0/12
+    serviceDomain: cluster.local
+  topology:
+    class: builtin-generic-v3.3.0
+    version: v1.32.3---vmware.1-fips-vkr.2
+    variables:
+      - name: kubernetes
+        value:
+          certificateRotation:
+            enabled: true
+            renewalDaysBeforeExpiry: 90
+      - name: vmClass
+        value: best-effort-xsmall
+      - name: storageClass
+        value: cluster-wld01-01a-storage-policy
+    controlPlane:
+      replicas: 1
+      metadata:
+        annotations:
+#          run.tanzu.vmware.com/resolve-os-image: os-name=photon, content-library=cl-1a6567e672f00e885
+    workers:
+      machineDeployments:
+        - class: node-pool
+          name: guest-cluster01-nodepool-7khv
+          replicas: 1
+          metadata:
+            annotations:
+#              run.tanzu.vmware.com/resolve-os-image: os-name=photon, content-library=cl-1a6567e672f00e885
