@@ -1,7 +1,7 @@
 apiVersion: cluster.x-k8s.io/v1beta1
 kind: Cluster
 metadata:
-  name: guest-cluster01
+  name: guest-cluster03
 spec:
   clusterNetwork:
     pods:
@@ -32,7 +32,7 @@ spec:
     workers:
       machineDeployments:
         - class: node-pool
-          name: guest-cluster01-nodepool-7khv
+          name: guest-cluster03-nodepool-7khv
           replicas: 1
           metadata:
             annotations:
