@@ -49,6 +49,19 @@ cd ~/Documents/Lab/vksdemo-main/vksexpdaylab/
 cat complete-cluster-example.yaml
 ```
 
+Talk about the supervisor:
+
+```bash
+vcf context list --wide
+vcf context use supervisor:$DEV_NS
+kubectl get nodes
+kubectl get clusters
+
+vcf context use supervisor:$TEST_NS
+kubectl get nodes
+kubectl get clusters
+```
+
 Show off Supervisor API resources:
 
 ```bash
