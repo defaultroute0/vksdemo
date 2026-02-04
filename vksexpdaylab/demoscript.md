@@ -60,7 +60,11 @@ kubectl get vm
 kubectl get vmi
 kubectl get kr
 ```
-
+A VKr/ (now labeled kr) is a curated Kubernetes distribution release published by Broadcom. It includes:
+- A specific Kubernetes version
+- VM image (OVA) stored in a Content Library
+- Bundled core packages (Antrea CNI, kapp-controller, secretgen-controller, etc.)
+- Security patches and CVE fixes
 ---
 
 ## 3. Show Off VCFA — Provider Portal
