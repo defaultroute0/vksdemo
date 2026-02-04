@@ -35,6 +35,7 @@ vcf context use supervisor:$DEV_NS
 Create guest cluster in `$DEV_NS` namespace with an older K8s version (takes time to provision):
 
 ```bash
+cd ~/Documents/Lab/vksdemo-main/vksexpdaylab/
 cat guest-cluster03.yaml
 kubectl apply -f guest-cluster03.yaml
 ```
@@ -44,6 +45,7 @@ kubectl apply -f guest-cluster03.yaml
 Show off the full cluster creation YAML with all available variables:
 
 ```bash
+cd ~/Documents/Lab/vksdemo-main/vksexpdaylab/
 cat complete-cluster-example.yaml
 ```
 
@@ -85,6 +87,7 @@ kubectl api-resources | grep -i "storageclasses\|virtualmachine\|virtualmachinei
 Deploy the shopping app directly into the Supervisor namespace:
 
 ```bash
+cd ~/Documents/Lab/vksdemo-main/
 vcf context use supervisor:$DEV_NS
 kubectl apply -f shopping.yaml
 ```
@@ -92,6 +95,7 @@ kubectl apply -f shopping.yaml
 > **If it fails:** "Increase the `$DEV_NS` namespace CPU limit to **30 GHz** in the vSphere Client, then retry:"
 
 ```bash
+cd ~/Documents/Lab/vksdemo-main/
 kubectl delete -f shopping.yaml
 kubectl apply -f shopping.yaml
 ```
@@ -109,6 +113,7 @@ Hit the frontend `EXTERNAL-IP` in a browser.
 ## 6. Create a VM via VM Service
 
 ```bash
+cd ~/Documents/Lab/vksdemo-main/vksexpdaylab/
 vcf context use supervisor:$DEV_NS
 cat oc-mysql2.yaml
 kubectl apply -f oc-mysql2.yaml
@@ -185,7 +190,7 @@ in gitea - Change replicas to **4** in opencart-infra and watch ArgoCD sync
 Once `guest-cluster03` upgrade completes (check VCFA Consumer Portal or `vcf cluster list`), download the kubeconfig and connect:
 
 1. **VCFA Consumer Portal** → your project → click on `guest-cluster03` → **Download Kubeconfig**
-2. Save it to `~/Downloads/guest-cluster03-kubeconfig`
+2. Save it to `~/Downloads/guest-cluster03-kubeconfig.yaml`
 
 Use it directly:
 
