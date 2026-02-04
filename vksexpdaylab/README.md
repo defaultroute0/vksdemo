@@ -1,4 +1,4 @@
-# VKS  — 45 minute Customer Demo
+# VKS  —  Customer Demo
 
 This folder contains manifests and a demo script specifically for use against a **pre-configured Cloud and Kubernetes Experience Day lab environment**. The goal is to quickly demonstrate running both **Kubernetes workloads and VMs on the same VCF/VKS platform** — no lengthy setup required.
 
