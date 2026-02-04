@@ -175,6 +175,6 @@ Once `guest-cluster03` upgrade completes (check VCFA Consumer Portal or `vcf clu
 Use it directly:
 
 ```bash
-kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig get nodes
-kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig version
+kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get nodes
+kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml version
 ```
