@@ -13,7 +13,7 @@
 Navigate to the lab directory and set context:
 
 ```bash
-cd ~/Documents/Lab/shopping/vksdemo-main/vksexpdaylab/
+cd ~/Documents/Lab/vksdemo-main/vksexpdaylab/
 vcf context use supervisor:dev-c5545
 ```
 
@@ -132,7 +132,7 @@ vcf context use supervisor:dev-c5545
 Upgrade `guest-cluster03` from `v1.32.3` → `v1.33.6`:
 
 ```bash
-cd ~/Documents/Lab/shopping/vksdemo-main/vksexpdaylab/
+cd ~/Documents/Lab/vksdemo-main/vksexpdaylab/
 vcf context use supervisor:dev-c5545
 cat guest-cluster03.yaml | grep certificate -A2 -B3
 kubectl patch cluster guest-cluster03 -n dev-c5545 --type merge \
@@ -150,8 +150,15 @@ Also monitor rolling update progress in the **VCFA Consumer Portal**.
 
 ---
 
-## 9. ArgoCD — Test Namespace
+## 9. ArgoCD — test-xxx Namespace
+Alter git repo and let argocd sup operator and argo instance deal with it
 
-- Switch to the test space
-- Show ArgoCD integration
-- Change replicas to **4** and watch ArgoCD sync
+```bash
+vcf context use supervisor:test-5plg6
+kubectl get pods
+argocd login 10.1.11.5     #admin   VMware123!VMware123!
+argocd cluster list
+argocd app list
+argocd app get opencart-infra
+```
+in gitea - Change replicas to **4** in opencart-infra and watch ArgoCD sync
