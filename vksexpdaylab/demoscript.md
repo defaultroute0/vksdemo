@@ -35,7 +35,7 @@ cat complete-cluster-example.yaml
 Show off Supervisor API resources:
 
 ```bash
-kubectl api-resources | grep -i "storageclasses\|virtualmachine\|virtualmachineimage\|osimage\|vmclass"
+kubectl api-resources | grep -i "storageclasses\|virtualmachine\|virtualmachineimage\|osimage\|vmclass\|kubernetesreleases"
 ```
 
 ---
