@@ -167,46 +167,14 @@ in gitea - Change replicas to **4** in opencart-infra and watch ArgoCD sync
 
 ## 10. Verify Guest Cluster Upgrade & Connect
 
-Once `guest-cluster03` upgrade completes (check VCFA Consumer Portal or `vcf cluster list`), register it and connect:
+Once `guest-cluster03` upgrade completes (check VCFA Consumer Portal or `vcf cluster list`), download the kubeconfig and connect:
+
+1. **VCFA Consumer Portal** → your project → click on `guest-cluster03` → **Download Kubeconfig**
+2. Save it to `~/Downloads/guest-cluster03-kubeconfig`
+
+Use it directly:
 
 ```bash
-vcf context list
-vcf context use vcfa:dev-xxxxx:default-project
-# Token if prompted: 0lraViAN9alcyYTZ0KlAuqLqrvEqxsr3
-```
-
-Register the VCFA JWT authenticator for the upgraded cluster:
-
-```bash
-vcf cluster register-vcfa-jwt-authenticator guest-cluster03
-```
-
-Export the kubeconfig:
-
-```bash
-vcf cluster kubeconfig get guest-cluster03 --export-file ~/.kube/config
-```
-
-Create a VCF CLI context for the guest cluster:
-
-```bash
-vcf context create guest-cluster03 \
-  --kubeconfig ~/.kube/config \
-  --kubecontext vcf-cli-guest-cluster03-dev-xxxxx@guest-cluster03-dev-xxxxx
-# → Select: cloud-consumption-interface
-```
-
-Refresh and switch to the new context:
-
-```bash
-vcf context refresh
-vcf context list
-vcf context use guest-cluster03
-```
-
-Verify the upgraded cluster is running the new K8s version:
-
-```bash
-kubectl get nodes
-kubectl version
+kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig get nodes
+kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig version
 ```
