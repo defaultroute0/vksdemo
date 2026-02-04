@@ -132,6 +132,9 @@ vcf context use supervisor:dev-c5545
 Upgrade `guest-cluster03` from `v1.32.3` → `v1.33.6`:
 
 ```bash
+cd ~/Documents/Lab/shopping/vksdemo-main/vksexpdaylab/
+vcf context use supervisor:dev-c5545
+cat guest-cluster03.yaml | grep certificate -A2 -B3
 kubectl patch cluster guest-cluster03 -n dev-c5545 --type merge \
   -p '{"spec":{"topology":{"version":"v1.33.6---vmware.1-fips-vkr.2"}}}'
 ```
