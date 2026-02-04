@@ -1,0 +1,166 @@
+apiVersion: cluster.x-k8s.io/v1beta1
+kind: Cluster
+metadata:
+  name: cluster-default
+  namespace: tkg-cluster-ns
+spec:
+  clusterNetwork:
+    services:
+      cidrBlocks: ["10.96.0.0/12"]
+    pods:
+      cidrBlocks: ["192.168.0.0/16"]
+    serviceDomain: "cluster.local"
+  topology:
+    class: builtin-generic-v3.4.0
+    version: v1.33
+    controlPlane:
+      replicas: 3
+      metadata:
+        annotations:
+          run.tanzu.vmware.com/resolve-os-image: os-name=photon
+      machineHealthCheck:
+        enabled: true
+        maxUnhealthy: 100%
+        nodeStartupTimeout: 25m
+        unhealthyRange: [5-7]
+      nodeDrainTimeout: 20m
+      nodeDeletionTimeout: 1h10m
+      nodeVolumeDetachTimeout: 30m
+      variables:
+        overrides:
+          - name: vmClass
+            value: best-effort-medium
+    workers:
+      machineDeployments:
+        - class: node-pool
+          name: node-pool-1
+          replicas: 3
+          metadata:
+            annotations:
+              run.tanzu.vmware.com/resolve-os-image: os-name=photon
+          machineHealthCheck:
+            enabled: true
+            maxUnhealthy: 100%
+            nodeStartupTimeout: 25m
+            unhealthyRange: [5-7]
+          nodeDrainTimeout: 20m
+          nodeDeletionTimeout: 1h10m
+          nodeVolumeDetachTimeout: 30m
+          strategy:
+            type: RollingUpdate
+            rollingUpdate:
+              maxUnavailable: 20%
+              maxSurge: 25%
+              deletePolicy: Oldest
+            remediation:
+              maxInFlight: 25%
+          variables:
+            overrides:
+              - name: vmClass
+                value: best-effort-medium
+    variables:
+      - name: vmClass
+        value: guaranteed-medium
+      - name: storageClass
+        value: tkg-storage-policy
+      - name: volumes
+        value:
+          - name: containerd
+            mountPath: /var/lib/containerd
+            storageClass: tkg-storage-profile
+            capacity: 40Gi
+          - name: kubelet-override
+            mountPath: /var/lib/kubelet
+            storageClass: tkg-storage-profile
+            capacity: 40Gi
+      - name: node
+        value:
+          labels:
+            tenant: tenant-foo
+            organization: engineering
+            managed: ""
+          taints:
+            - key: key1
+              value: value1
+              effect: NoSchedule
+            - key: key2
+              value: value2
+              effect: NoExecute
+      - name: kubernetes
+        value:
+          certificateRotation:
+            enabled: true
+            renewalDaysBeforeExpiry: 99
+          endpointFQDNs:
+            - fqdn1.cluster.internal
+            - fqdn2.engineering.org
+          security:
+            podSecurityStandard:
+              deactivated: false
+              audit: privileged
+              auditVersion: v1.27
+              enforce: restricted
+              enforceVersion: latest
+              warn: baseline
+              warnVersion: latest
+              exemptions:
+                namespaces: ["privileged-workload-ns"]
+      - name: vsphereOptions
+        value:
+          persistentVolumes:
+            availableStorageClasses:
+              - storage-class-foo
+              - storage-class-bar
+            defaultStorageClass: storage-class-bar
+            availableVolumeSnapshotClasses:
+              - vol-snapclass-foo
+              - vol-snapclass-bar
+            defaultVolumeSnapshotClass: vol-snapclass-bar
+            customizableStorageClassAnnotations:
+              - annotation-key-foo
+            customizableStorageClassLabels:
+              - label-key-foo
+      - name: osConfiguration
+        value:
+          ntp:
+            servers:
+              - ntp.test
+          systemProxy:
+            http: http://1.2.3.4:2139
+            https: http://4.3.2.1:2139
+            noProxy:
+              - no.proxy.test1
+              - no.proxy.test2
+          trust:
+            additionalTrustedCAs:
+              - caCert:
+                  secretRef:
+                    key: trust-ca-test1
+                    name: "trust-ca-secret-1"
+          user:
+            passwordSecret:
+              key: user-secret-key-test
+              name: user-secret-name-test
+            sshAuthorizedKey: sshAuthorizedKeyTest...
+            user: customuser
+            password:
+              renewalDaysBeforeExpiry: 14
+          fips:
+            enabled: true
+          ubuntuPro:
+            tokenSecretRef: ubuntu-pro-token
+            services:
+              - esm-infra
+              - esm-apps
+              - livepatch
+          directoryJoin:
+            credentialSecretRef: domain-join
+            domain: contoso.test
+            gmsaControlSecurityGroupDN: CN=VKSClusterMembers,OU=VKSGMSAAccounts,DC=contoso,DC=test
+            organizationalUnitDN: OU=VKSComputers,DC=contoso,DC=test
+      - name: resourceConfiguration
+        value:
+          systemReserved:
+            cpu: 1
+            memory: 4G
+            automatic: false
