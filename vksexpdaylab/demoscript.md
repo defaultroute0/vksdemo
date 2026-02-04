@@ -52,7 +52,13 @@ cat complete-cluster-example.yaml
 Show off Supervisor API resources:
 
 ```bash
+vcf context use supervisor:$DEV_NS
 kubectl api-resources | grep -i "storageclasses\|virtualmachine\|virtualmachineimage\|osimage\|vmclass\|kubernetesreleases"
+kubectl get sc
+kubectl get vmclass
+kubectl get vm
+kubectl get vmi
+kubectl get kr
 ```
 
 ---
