@@ -220,6 +220,10 @@ Use it directly:
 ```bash
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get nodes
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml version
+kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml create ns shopping
+kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml label ns shopping pod-security.kubernetes.io/enforce=privileged
+kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml apply -f ~/Documents/Lab/vksdemo-main/shopping.yaml -n shopping
+kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get svc -n shopping
 ```
 
 Show what a valilla cluster includes:
