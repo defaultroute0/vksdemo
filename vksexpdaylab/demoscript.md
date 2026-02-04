@@ -22,6 +22,7 @@ Create guest cluster in `dev-c5545` namespace with an older K8s version (takes t
 ```bash
 cat guest-cluster03.yaml
 kubectl apply -f guest-cluster03.yaml
+also show off full yaml for clustwer creation complete-cluster-example.yaml
 ```
 
 > **Note:** Using `v1.32.3---vmware.1-fips-vkr.2` intentionally so we can demo an upgrade later.
