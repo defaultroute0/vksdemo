@@ -1,5 +1,20 @@
 # VCF / VKS / VCFA Demo Runbook
 
+## Lab Variables
+
+> **Set these once per lab deployment.** The namespace IDs are dynamically generated and change each time.
+
+| Variable | Value | Where to Find |
+|---|---|---|
+| `DEV_NS` | `dev-_____` | VCFA Consumer Portal → Projects, or `vcf context list` |
+| `TEST_NS` | `test-_____` | VCFA Consumer Portal → Projects, or `vcf context list` |
+
+```bash
+# Run these at the start of your session:
+export DEV_NS=dev-XXXXX
+export TEST_NS=test-XXXXX
+```
+
 ---
 
 ## 1. Show Off Supervisor in VCA
@@ -14,17 +29,17 @@ Navigate to the lab directory and set context:
 
 ```bash
 cd ~/Documents/Lab/vksdemo-main/vksexpdaylab/
-vcf context use supervisor:dev-c5545
+vcf context use supervisor:$DEV_NS
 ```
 
-Create guest cluster in `dev-c5545` namespace with an older K8s version (takes time to provision):
+Create guest cluster in `$DEV_NS` namespace with an older K8s version (takes time to provision):
 
 ```bash
 cat guest-cluster03.yaml
 kubectl apply -f guest-cluster03.yaml
 ```
 
-> **Note:** Using `v1.32.3---vmware.1-fips-vkr.2` intentionally so we can demo an upgrade later.
+> **Note:** "Using `v1.32.3---vmware.1-fips-vkr.2` intentionally so we can demo an upgrade later."
 
 Show off the full cluster creation YAML with all available variables:
 
@@ -70,11 +85,11 @@ kubectl api-resources | grep -i "storageclasses\|virtualmachine\|virtualmachinei
 Deploy the shopping app directly into the Supervisor namespace:
 
 ```bash
-vcf context use supervisor:dev-c5545
+vcf context use supervisor:$DEV_NS
 kubectl apply -f shopping.yaml
 ```
 
-> **If it fails:** Increase the `dev-c5545` namespace CPU limit to **30 GHz** in the vSphere Client, then retry:
+> **If it fails:** "Increase the `$DEV_NS` namespace CPU limit to **30 GHz** in the vSphere Client, then retry:"
 
 ```bash
 kubectl delete -f shopping.yaml
@@ -94,7 +109,7 @@ Hit the frontend `EXTERNAL-IP` in a browser.
 ## 6. Create a VM via VM Service
 
 ```bash
-vcf context use supervisor:dev-c5545
+vcf context use supervisor:$DEV_NS
 cat oc-mysql2.yaml
 kubectl apply -f oc-mysql2.yaml
 ```
@@ -106,7 +121,7 @@ kubectl apply -f oc-mysql2.yaml
 ### Database — VM on Supervisor
 
 ```bash
-vcf context use supervisor:dev-c5545
+vcf context use supervisor:$DEV_NS
 kubectl get vm                 # existing oc-mysql VM
 kubectl get svc                # look for TCP 3306 LB for the DB
 ```
@@ -126,23 +141,23 @@ Hit `http://10.1.11.4` in browser.
 ## 8. Upgrade Guest Cluster
 
 ```bash
-vcf context use supervisor:dev-c5545
+vcf context use supervisor:$DEV_NS
 ```
 
 Upgrade `guest-cluster03` from `v1.32.3` → `v1.33.6`:
 
 ```bash
 cd ~/Documents/Lab/vksdemo-main/vksexpdaylab/
-vcf context use supervisor:dev-c5545
+vcf context use supervisor:$DEV_NS
 cat guest-cluster03.yaml | grep certificate -A2 -B3
-kubectl patch cluster guest-cluster03 -n dev-c5545 --type merge \
+kubectl patch cluster guest-cluster03 -n $DEV_NS --type merge \
   -p '{"spec":{"topology":{"version":"v1.33.6---vmware.1-fips-vkr.2"}}}'
 ```
 
 Monitor from VCFA:
 
 ```bash
-vcf context use vcfa:dev-c5545:default-project
+vcf context use vcfa:$DEV_NS:default-project
 vcf cluster list               # shows "upgrading kr"
 ```
 
@@ -154,7 +169,7 @@ Also monitor rolling update progress in the **VCFA Consumer Portal**.
 Alter git repo and let argocd sup operator and argo instance deal with it
 
 ```bash
-vcf context use supervisor:test-5plg6
+vcf context use supervisor:$TEST_NS
 kubectl get pods
 argocd login 10.1.11.5     #admin   VMware123!VMware123!
 argocd cluster list
