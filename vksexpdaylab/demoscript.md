@@ -221,3 +221,10 @@ Use it directly:
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get nodes
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml version
 ```
+
+Show what a valilla cluster includes:
+- k8s controllers, and core packages: storage drivers, auth, cni, velero, secret management, security patches and CVE's
+
+```bash
+kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get ns
+```
