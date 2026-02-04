@@ -1,125 +1,148 @@
-                                
-                                                       
-⏺ VCF / VKS / VCFA Demo Runbook                        
-                                                       
-  ---                                                  
-  1. Show Off Supervisor in VCA                        
-                                                       
-  - Supervisor overview, namespaces, all attributes    
-                                                       
-  ---                                                  
-  2. From CLI                                          
-                                                       
-  Navigate to the lab directory and set context:       
-                                                       
-  cd                                                   
-  ~/Documents/Lab/shopping/vksdemo-main/vksexpdaylab/  
-  vcf context use supervisor:dev-c5545                 
-  Create guest cluster in dev-c5545 namespace with an  
-  older K8s version (takes time to provision):         
-                                                       
-  cat guest-cluster03.yaml                             
-  kubectl apply -f guest-cluster03.yaml                
-  Note: Using v1.32.3---vmware.1-fips-vkr.2            
-  intentionally so we can demo an upgrade later.       
-                                                       
-  Show off Supervisor API resources:                   
-                                                       
-  kubectl api-resources | grep -i "storageclasses\|virt
-  ualmachine\|virtualmachineimage\|osimage\|vmclass"   
-  ---                                                  
-  3. Show Off VCFA — Provider Portal                   
-  Concept: Super Tenancy                               
-  What to Show: Organizations (Org)                    
-  ────────────────────────────────────────             
-  Concept: Tenancy                                     
-  What to Show: Projects within an Org                 
-  ────────────────────────────────────────             
-  Concept: Region Quotas                               
-  What to Show: Resource limits per region             
-  ────────────────────────────────────────             
-  Concept: Provider Networking                         
-  What to Show: Network configuration                  
-  ────────────────────────────────────────             
-  Concept: Connections                                 
-  What to Show: OIDC, Supervisor registration          
-  ---                                                  
-  4. Show Off VCFA — Consumer Portal                   
-                                                       
-  Manage & Govern                                      
-                                                       
-  - You have been given project default-project inside 
-  the Broadcom Org                                     
-  - Guardrailing: regions, namespaces, namespace       
-  classes                                              
-                                                       
-  Build & Deploy                                       
-                                                       
-  - Brings everything together for consumption —       
-  context and instances                                
-                                                       
-  ---                                                  
-  5. vSphere Pods                                      
-                                                       
-  Deploy the shopping app directly into the Supervisor 
-  namespace:                                           
-                                                       
-  vcf context use supervisor:dev-c5545                 
-  kubectl apply -f shopping.yaml                       
-  If it fails: Increase the dev-c5545 namespace CPU    
-  limit to 30 GHz in the vSphere Client, then retry:   
-                                                       
-  kubectl delete -f shopping.yaml                      
-  kubectl apply -f shopping.yaml                       
-  Verify and access:                                   
-                                                       
-  kubectl get svc                                      
-  Hit the frontend EXTERNAL-IP in a browser.           
-                                                       
-  ---                                                  
-  6. Create a VM via VM Service                        
-                                                       
-  vcf context use supervisor:dev-c5545                 
-  cat oc-mysql2.yaml                                   
-  kubectl apply -f oc-mysql2.yaml                      
-  ---                                                  
-  7. Show Existing OpenCart App (VM + Container, Load  
-  Balanced)                                            
-                                                       
-  Database — VM on Supervisor                          
-                                                       
-  vcf context use supervisor:dev-c5545                 
-  kubectl get vm                 # existing oc-mysql VM
-  kubectl get svc                # look for TCP 3306 LB
-   for the DB                                          
-  Frontend — Containers in Guest Cluster               
-                                                       
-  vcf context use vks-01                               
-  kubectl get pods -n opencart                         
-  kubectl get svc -n opencart                          
-  Hit http://10.1.11.4 in browser.                     
-                                                       
-  ---                                                  
-  8. Upgrade Guest Cluster                             
-                                                       
-  vcf context use supervisor:dev-c5545                 
-  Upgrade guest-cluster03 from v1.32.3 → v1.33.6:      
-                                                       
-  kubectl patch cluster guest-cluster03 -n dev-c5545   
-  --type merge \                                       
-    -p '{"spec":{"topology":{"version":"v1.33.6---vmwar
-  e.1-fips-vkr.2"}}}'                                  
-  Monitor from VCFA:                                   
-                                                       
-  vcf context use vcfa:dev-c5545:default-project       
-  vcf cluster list               # shows "upgrading kr"
-  Also monitor rolling update progress in the VCFA     
-  Consumer Portal.                                     
-                                                       
-  ---                                                  
-  9. ArgoCD — Test Namespace                           
-                                                       
-  - Switch to the test space                           
-  - Show ArgoCD integration                            
-  - Change replicas to 4 and watch ArgoCD sync         
-                               
+# VCF / VKS / VCFA Demo Runbook
+
+---
+
+## 1. Show Off Supervisor in VCA
+
+- Supervisor overview, namespaces, all attributes
+
+---
+
+## 2. From CLI
+
+Navigate to the lab directory and set context:
+
+```bash
+cd ~/Documents/Lab/shopping/vksdemo-main/vksexpdaylab/
+vcf context use supervisor:dev-c5545
+```
+
+Create guest cluster in `dev-c5545` namespace with an older K8s version (takes time to provision):
+
+```bash
+cat guest-cluster03.yaml
+kubectl apply -f guest-cluster03.yaml
+```
+
+> **Note:** Using `v1.32.3---vmware.1-fips-vkr.2` intentionally so we can demo an upgrade later.
+
+Show off Supervisor API resources:
+
+```bash
+kubectl api-resources | grep -i "storageclasses\|virtualmachine\|virtualmachineimage\|osimage\|vmclass"
+```
+
+---
+
+## 3. Show Off VCFA — Provider Portal
+
+| Concept | What to Show |
+|---|---|
+| **Super Tenancy** | Organizations (Org) |
+| **Tenancy** | Projects within an Org |
+| **Region Quotas** | Resource limits per region |
+| **Provider Networking** | Network configuration |
+| **Connections** | OIDC, Supervisor registration |
+
+---
+
+## 4. Show Off VCFA — Consumer Portal
+
+### Manage & Govern
+
+- You have been given project `default-project` inside the `Broadcom` Org
+- Guardrailing: regions, namespaces, namespace classes
+
+### Build & Deploy
+
+- Brings everything together for consumption — context and instances
+
+---
+
+## 5. vSphere Pods
+
+Deploy the shopping app directly into the Supervisor namespace:
+
+```bash
+vcf context use supervisor:dev-c5545
+kubectl apply -f shopping.yaml
+```
+
+> **If it fails:** Increase the `dev-c5545` namespace CPU limit to **30 GHz** in the vSphere Client, then retry:
+
+```bash
+kubectl delete -f shopping.yaml
+kubectl apply -f shopping.yaml
+```
+
+Verify and access:
+
+```bash
+kubectl get svc
+```
+
+Hit the frontend `EXTERNAL-IP` in a browser.
+
+---
+
+## 6. Create a VM via VM Service
+
+```bash
+vcf context use supervisor:dev-c5545
+cat oc-mysql2.yaml
+kubectl apply -f oc-mysql2.yaml
+```
+
+---
+
+## 7. Show Existing OpenCart App (VM + Container, Load Balanced)
+
+### Database — VM on Supervisor
+
+```bash
+vcf context use supervisor:dev-c5545
+kubectl get vm                 # existing oc-mysql VM
+kubectl get svc                # look for TCP 3306 LB for the DB
+```
+
+### Frontend — Containers in Guest Cluster
+
+```bash
+vcf context use vks-01
+kubectl get pods -n opencart
+kubectl get svc -n opencart
+```
+
+Hit `http://10.1.11.4` in browser.
+
+---
+
+## 8. Upgrade Guest Cluster
+
+```bash
+vcf context use supervisor:dev-c5545
+```
+
+Upgrade `guest-cluster03` from `v1.32.3` → `v1.33.6`:
+
+```bash
+kubectl patch cluster guest-cluster03 -n dev-c5545 --type merge \
+  -p '{"spec":{"topology":{"version":"v1.33.6---vmware.1-fips-vkr.2"}}}'
+```
+
+Monitor from VCFA:
+
+```bash
+vcf context use vcfa:dev-c5545:default-project
+vcf cluster list               # shows "upgrading kr"
+```
+
+Also monitor rolling update progress in the **VCFA Consumer Portal**.
+
+---
+
+## 9. ArgoCD — Test Namespace
+
+- Switch to the test space
+- Show ArgoCD integration
+- Change replicas to **4** and watch ArgoCD sync
