@@ -14,7 +14,7 @@ This folder contains manifests and a demo script specifically for use against a 
 ## Prerequisites
 
 - A fully configured Cloud & K8S Experience Day lab (Supervisor, VKS, VCFA all operational)
-- VCF CLI installed and contexts configured (`supervisor:dev-c5545`, `vks-01`, `vcfa:dev-c5545:default-project`)
+- VCF CLI installed and contexts configured (`supervisor:$DEV_NS`, `vks-01`, `vcfa:$DEV_NS:default-project`)
 - The parent repo's manifests already applied (OpenCart MySQL VM, guest cluster `vks-01`, etc.)
 
 ## Files

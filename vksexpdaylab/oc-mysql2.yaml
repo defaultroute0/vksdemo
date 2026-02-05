@@ -5,8 +5,7 @@
       topology.kubernetes.io/zone: z-wld-a             
       vm-lb-dev: vm-lb-selector                        
       vm-selector: oc-mysql2                            
-    name: oc-mysql-2                                   
-    namespace: dev-c5545                               
+    name: oc-mysql-2
   spec:                                                
     bootstrap:                                         
       cloudInit:                                       
