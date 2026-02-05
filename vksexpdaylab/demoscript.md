@@ -219,7 +219,8 @@ Use it directly:
 
 ```bash
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get nodes
-kubectl -n "$DEV_NS" patch cluster guest-cluster03 --type merge -p '{"spec":{"topology":{"workers":{"machineDeployments":[{"name":"guest-cluster03-nodepool-7khv","class":"node-pool","replicas":3}]}}}}'
+  # make sure upgrade has fininshed first
+kubectl -n "$DEV_NS" patch cluster guest-cluster03 --type merge -p '{"spec":{"topology":{"workers":{"machineDeployments":[{"name":"guest-cluster03-nodepool-7khv","class":"node-pool","replicas":2}]}}}}'
 kubectl -n "$DEV_NS" get machinedeployments
 kubectl -n "$DEV_NS" get machines
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml version
