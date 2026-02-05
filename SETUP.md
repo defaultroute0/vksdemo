@@ -104,7 +104,7 @@ VMware123!VMware123!
 -------
 Get this started while you show stuff in SUP cluster as it takes a while
 ````
-cd ~/Downloads/vksdemo-vcf9/
+cd ~/Downloads/vksdemo-main/
 vcf cluster create -f guest-cluster01.yaml
 vcf cluster list -n ns01
 ````
@@ -198,7 +198,7 @@ kubectl apply -f shoppingingress.yaml -f shoppingingressnetpol.yaml -n ns01
 Deploy something into the GUEST cluster into ns01 namespace
 -----
 ````
-vcf context create guest-cluster01 --endpoint 10.1.0.2:443 --username administrator@wld.sso --ca-certificate ~/hol/ca/full_chain.crt --workload-cluster-name guest-cluster01 --workload-cluster-namespace ns01 --type k8s
+vcf context create guest-cluster01 --endpoint 10.1.0.2:443 --username administrator@wld.sso --ca-certificate ~/hol/ca/full-chain.crt --workload-cluster-name guest-cluster01 --workload-cluster-namespace ns01 --type k8s
 vcf context use guest-cluster01:guestcluster01
    this will take us into the guest-cluster01 deployed into the sup cluster's namespace 'ns01'
 kubectl get nodes
