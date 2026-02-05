@@ -1,5 +1,26 @@
 # VCF / VKS / VCFA Demo Runbook
 
+## Prerequisites: Download Demo Files
+
+**From the lab console browser:**
+
+1. Open Firefox and navigate to: `https://github.com/defaultroute0/vksdemo`
+2. Click the green **Code** button → **Download ZIP**
+3. Save to `~/Downloads/`
+4. Extract to the Lab directory:
+
+```bash
+cd ~/Documents/Lab
+unzip ~/Downloads/vksdemo-main.zip
+ls ~/Documents/Lab/vksdemo-main/vksexpdaylab/
+```
+
+You should see: `guest-cluster03.yaml`, `oc-mysql2.yaml`, `complete-cluster-example.yaml`, `setup.sh`, `teardown.sh`, etc.
+
+> **Note:** All commands in this runbook assume files are at `~/Documents/Lab/vksdemo-main/`. If you cloned via `git clone` instead of downloading the ZIP, the path is the same — just rename the folder if needed.
+
+---
+
 ## Lab Variables
 
 > **Set these once per lab deployment.** The namespace IDs are dynamically generated and change each time.
@@ -72,8 +93,6 @@ kubectl get vmclass
 kubectl get vm
 kubectl get vmi
 kubectl get kr
-kubectl describe kr v1.33.6---vmware.1-fips-vkr.2
-kubectl get osimages | grep 1.33.6
 ```
 A VKr/ (now labeled kr) is a curated Kubernetes distribution release published by Broadcom. It includes:
 - A specific Kubernetes version
@@ -81,28 +100,6 @@ A VKr/ (now labeled kr) is a curated Kubernetes distribution release published b
 - Bundled core packages (Antrea CNI, kapp-controller, secretgen-controller, etc.)
 - Security patches and CVE fixes
 ---
-
-Lets talk about Core (default)  and Standard (Opt-In) cluster packages:
-```bash
-  vcf package available list -n tkg-system
-```
-
-Every VKS cluster ships with a set of core packages baked into the image — networking (Antrea), storage (vSphere CSI), DNS
-  (CoreDNS), authentication (Pinniped), and the package manager itself (kapp-controller). These are fully supported by Broadcom,
-  version-locked to each Kubernetes release, and patched automatically when you upgrade the cluster. You don't install them, you
-  don't manage them, and CVE fixes are typically available within days.
-
-  On top of that, Broadcom publishes a curated repository of standard packages — Prometheus, Cert Manager, Contour, Istio, Harbor,
-  Velero, and more. These are validated, pre-tested versions of popular open-source projects that you install with a single CLI
-  command. Broadcom supports installation and upgrades, tracks CVEs, and runs compatibility pre-checks before cluster upgrades so
-  your add-ons don't break. Istio gets full runtime support — if there's a bug, Broadcom will triage it and even submit upstream
-  fixes on your behalf.
-
-  Can you install your own versions instead? Absolutely — it's a standard Kubernetes cluster, so helm install works fine. But the
-  standard packages give you a validated, supported, air-gap-friendly bundle where someone else is tracking CVEs and testing
-  upgrade compatibility for you. For most customers, that's worth it for the operational packages (monitoring, ingress,
-  certificates, backup). For app-specific tooling, install whatever you need.
-  
 
 ## 3. Show Off VCFA — Provider Portal
 
@@ -163,7 +160,6 @@ Hit the frontend `EXTERNAL-IP` in a browser.
 cd ~/Documents/Lab/vksdemo-main/vksexpdaylab/
 vcf context use supervisor:$DEV_NS
 cat oc-mysql2.yaml
-cat ../../oc-mysql-cloud-config.yaml
 kubectl apply -f oc-mysql2.yaml
 ```
 
@@ -261,3 +257,32 @@ Show what a valilla cluster includes:
 ```bash
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get ns
 ```
+
+---
+
+## Appendix: Setup & Teardown Scripts
+
+One-shot scripts to create or delete everything. Both require `DEV_NS` to be set.
+
+> **Before setup:** Ensure the `$DEV_NS` namespace CPU limit is set to **30 GHz** in vSphere Client.
+
+**Create everything:**
+
+```bash
+export DEV_NS=dev-XXXXX
+cd ~/Documents/Lab/vksdemo-main/vksexpdaylab/
+./setup.sh
+```
+
+**Delete everything:**
+
+```bash
+export DEV_NS=dev-XXXXX
+cd ~/Documents/Lab/vksdemo-main/vksexpdaylab/
+./teardown.sh
+```
+
+| Script | What It Does |
+|---|---|
+| `setup.sh` | Deploys guest-cluster03, shopping app, oc-mysql2 VM. Waits for all to be ready. |
+| `teardown.sh` | Deletes guest-cluster03, shopping app, oc-mysql2 VM. Waits for full cleanup. |
