@@ -141,6 +141,7 @@ Hit the frontend `EXTERNAL-IP` in a browser.
 cd ~/Documents/Lab/vksdemo-main/vksexpdaylab/
 vcf context use supervisor:$DEV_NS
 cat oc-mysql2.yaml
+cat ../../oc-mysql-cloud-config.yaml
 kubectl apply -f oc-mysql2.yaml
 ```
 
