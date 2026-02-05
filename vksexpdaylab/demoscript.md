@@ -219,6 +219,8 @@ Use it directly:
 
 ```bash
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get nodes
+kubectl -n "$DEV_NS" patch cluster guest-cluster03 --type merge -p '{"spec":{"topology":{"workers":{"machineDeployments":[{"name":"guest-cluster03-nodepool-7khv","class":"node-pool","replicas":3}]}}}}'
+kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get nodes
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml version
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml create ns shopping
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml label ns shopping pod-security.kubernetes.io/enforce=privileged
