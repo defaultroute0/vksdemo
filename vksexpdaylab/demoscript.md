@@ -82,6 +82,44 @@ A VKr/ (now labeled kr) is a curated Kubernetes distribution release published b
 - Security patches and CVE fixes
 ---
 
+Lets talk about Core (default)  and Standard (Opt-In) cluster packages:
+```bash
+  vcf package available list -n tkg-system
+```
+
+Every VKS cluster ships with a set of core packages       
+  baked into the image — networking (Antrea), storage       
+  (vSphere CSI), DNS (CoreDNS), authentication          
+  (Pinniped), and the package manager itself                
+  (kapp-controller). These are fully supported by       
+  Broadcom, version-locked to each Kubernetes release,  
+  and patched automatically when you upgrade the        
+  cluster. You don't install them, you don't manage     
+  them, and CVE fixes are typically available within    
+  days.                                                 
+                                                        
+  On top of that, Broadcom publishes a curated          
+  repository of standard packages — Prometheus, Cert    
+  Manager, Contour, Istio, Harbor, Velero, and more.    
+  These are validated, pre-tested versions of popular   
+  open-source projects that you install with a single   
+  CLI command. Broadcom supports installation and       
+  upgrades, tracks CVEs, and runs compatibility         
+  pre-checks before cluster upgrades so your add-ons    
+  don't break. Istio gets full runtime support — if     
+  there's a bug, Broadcom will triage it and even       
+  submit upstream fixes on your behalf.                 
+                                                        
+  Can you install your own versions instead? Absolutely 
+   — it's a standard Kubernetes cluster, so helm        
+  install works fine. But the standard packages give    
+  you a validated, supported, air-gap-friendly bundle   
+  where someone else is tracking CVEs and testing       
+  upgrade compatibility for you. For most customers,    
+  that's worth it for the operational packages          
+  (monitoring, ingress, certificates, backup). For      
+  app-specific tooling, install whatever you need."     
+
 ## 3. Show Off VCFA — Provider Portal
 
 | Concept | What to Show |
