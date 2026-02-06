@@ -274,12 +274,14 @@ Once `guest-cluster03` upgrade completes (check VCFA Consumer Portal or `vcf clu
 OR
 
 ```bash
+vcf context use supervisor:$DEV_NS
 kubectl get secret guest-cluster03-kubeconfig -o jsonpath='{.data.value}' | /usr/bin/base64 -d > ~/Downloads/guest-cluster03-kubeconfig.yaml
 ```
 
 Use it directly:
 
 ```bash
+vcf context use supervisor:$DEV_NS
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get nodes
   # make sure upgrade has fininshed first
 kubectl -n "$DEV_NS" patch cluster guest-cluster03 --type merge -p '{"spec":{"topology":{"workers":{"machineDeployments":[{"name":"guest-cluster03-nodepool-7khv","class":"node-pool","replicas":2}]}}}}'
@@ -297,6 +299,10 @@ Show what a valilla cluster includes:
 
 ```bash
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get ns
+
+kubectl get kr
+kubectl describe kr v1.33.6---vmware.1-fips-vkr.2 | grep -e Boot -e Name
+kubectl get osimages | grep 1.33.6
 ```
 
 ---
