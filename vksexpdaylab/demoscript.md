@@ -229,6 +229,33 @@ argocd cluster list
 argocd app list
 argocd app get opencart-infra
 ```
+
+Supervisor (cluster-wide)
+│
+├── ArgoCD Operator (from Supervisor Service tile)
+│     - Registers kind: ArgoCD CRD
+│     - Watches all namespaces for ArgoCD CRs
+│     - Pulls Broadcom-validated container images
+│     - Does NOT run any ArgoCD server itself
+│
+├── test-xxxxx namespace
+│     └── kind: ArgoCD CR applied (argocd-instance.yaml)
+│           └── Operator deploys:
+│               ├── argocd-server (UI + API)
+│               ├── argocd-repo-server (Git cloning)
+│               ├── argocd-application-controller (sync engine)
+│               ├── argocd-redis (caching)
+│               ├── Service type: LoadBalancer (external VIP)
+│               └── Secret: argocd-initial-admin-secret
+│
+├── dev-xxxxx namespace
+│     └── (no ArgoCD CR = no instance here)
+│
+└── prod-xxxxx namespace
+      └── (could deploy another independent ArgoCD instance)
+
+
+      
 in gitea - Change replicas to **4** in opencart-infra and watch ArgoCD sync
 
 ---
