@@ -222,6 +222,7 @@ vcf context use supervisor:$DEV_NS
 cat guest-cluster03.yaml | grep certificate -A2 -B3
 kubectl patch cluster guest-cluster03 -n $DEV_NS --type merge \
   -p '{"spec":{"topology":{"version":"v1.33.6---vmware.1-fips-vkr.2"}}}'
+watch "kubectl get machines | grep guest"     
 ```
 
 Monitor from VCFA:
