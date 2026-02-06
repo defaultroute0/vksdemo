@@ -34,6 +34,7 @@ You should see: `guest-cluster03.yaml`, `oc-mysql2.yaml`, `complete-cluster-exam
 # Run these at the start of your session:
 export DEV_NS=dev-XXXXX
 export TEST_NS=test-XXXXX
+also turn nsx edge vm 2 off to save CPU
 ```
 
 ---
