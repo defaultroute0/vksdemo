@@ -230,6 +230,7 @@ argocd app list
 argocd app get opencart-infra
 ```
 
+```
 Supervisor (cluster-wide)
 │
 ├── ArgoCD Operator (from Supervisor Service tile)
@@ -253,7 +254,7 @@ Supervisor (cluster-wide)
 │
 └── prod-xxxxx namespace
       └── (could deploy another independent ArgoCD instance)
-
+```
 
       
 in gitea - Change replicas to **4** in opencart-infra and watch ArgoCD sync
