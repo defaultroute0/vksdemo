@@ -39,11 +39,13 @@ also turn nsx edge vm 2 off to save CPU
 
 ---
 
+
 ## 1. Show Off Supervisor in VCA
 
 - Supervisor overview, namespaces, all attributes
 
 ---
+
 
 ## 2. From CLI
 
@@ -103,7 +105,9 @@ A VKr/ (now labeled kr) is a curated Kubernetes distribution release published b
 - VM image (OVA) stored in a Content Library
 - Bundled core packages (Antrea CNI, kapp-controller, secretgen-controller, etc.)
 - Security patches and CVE fixes
+
 ---
+
 
 ## 3. Show Off VCFA — Provider Portal
 
@@ -117,6 +121,7 @@ A VKr/ (now labeled kr) is a curated Kubernetes distribution release published b
 
 ---
 
+
 ## 4. Show Off VCFA — Consumer Portal
 
 ### Manage & Govern
@@ -129,6 +134,7 @@ A VKr/ (now labeled kr) is a curated Kubernetes distribution release published b
 - Brings everything together for consumption — context and instances
 
 ---
+
 
 ## 5. vSphere Pods
 
@@ -158,6 +164,7 @@ Hit the frontend `EXTERNAL-IP` in a browser.
 
 ---
 
+
 ## 6. Create a VM via VM Service
 
 ```bash
@@ -168,6 +175,7 @@ kubectl apply -f oc-mysql2.yaml
 ```
 
 ---
+
 
 ## 7. Show Existing OpenCart App (VM + Container, Load Balanced)
 
@@ -190,6 +198,7 @@ kubectl get svc -n opencart
 Hit `http://10.1.11.4` in browser.
 
 ---
+
 
 ## 8. Upgrade Guest Cluster
 
@@ -217,6 +226,7 @@ vcf cluster list               # shows "upgrading kr"
 Also monitor rolling update progress in the **VCFA Consumer Portal**.
 
 ---
+
 
 ## 9. ArgoCD — test-xxx Namespace
 Alter git repo and let argocd sup operator and argo instance deal with it
@@ -265,6 +275,7 @@ in gitea - Change replicas to **4** in opencart-infra and watch ArgoCD sync
 
 ---
 
+
 ## 10. Verify Guest Cluster Upgrade & Connect
 
 Once `guest-cluster03` upgrade completes (check VCFA Consumer Portal or `vcf cluster list`), download the kubeconfig and connect:
@@ -307,6 +318,7 @@ kubectl get osimages | grep 1.33.6
 ```
 
 ---
+
 
 ## Appendix: Setup & Teardown Scripts
 
