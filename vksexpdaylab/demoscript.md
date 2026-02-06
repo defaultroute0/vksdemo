@@ -268,7 +268,12 @@ Once `guest-cluster03` upgrade completes (check VCFA Consumer Portal or `vcf clu
 1. **VCFA Consumer Portal** → your project → click on `guest-cluster03` → **Download Kubeconfig**
 2. Save it to `~/Downloads/guest-cluster03-kubeconfig.yaml`
 
+OR
+
+```bash
+kubectl get secret guest-cluster03-kubeconfig -o jsonpath='{.data.value}' | /usr/bin/base64 -d > ~/Downloads/guest-cluster03-kubeconfig.yaml
 Use it directly:
+```
 
 ```bash
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get nodes
