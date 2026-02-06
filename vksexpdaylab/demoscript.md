@@ -93,7 +93,10 @@ kubectl get vmclass
 kubectl get vm
 kubectl get vmi
 kubectl get kr
+kubectl describe kr v1.33.6---vmware.1-fips-vkr.2
+kubectl get osimages | grep 1.33.6
 ```
+
 A VKr/ (now labeled kr) is a curated Kubernetes distribution release published by Broadcom. It includes:
 - A specific Kubernetes version
 - VM image (OVA) stored in a Content Library
