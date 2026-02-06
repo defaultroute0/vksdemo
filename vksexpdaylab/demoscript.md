@@ -272,8 +272,9 @@ OR
 
 ```bash
 kubectl get secret guest-cluster03-kubeconfig -o jsonpath='{.data.value}' | /usr/bin/base64 -d > ~/Downloads/guest-cluster03-kubeconfig.yaml
-Use it directly:
 ```
+
+Use it directly:
 
 ```bash
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get nodes
