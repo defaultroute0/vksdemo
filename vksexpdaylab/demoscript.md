@@ -219,8 +219,12 @@ Alter git repo and let argocd sup operator and argo instance deal with it
 
 ```bash
 vcf context use supervisor:$TEST_NS
+cd ~/Documents/Lab/vksdemo-main/vksexpdaylab/
+cat ../../argocd-instance.yaml
 kubectl get pods
-argocd login 10.1.11.5     #admin   VMware123!VMware123!
+argocd login 10.1.11.5
+ #admin   VMware123!VMware123!
+
 argocd cluster list
 argocd app list
 argocd app get opencart-infra
