@@ -33,7 +33,7 @@ spec:
       machineDeployments:
         - class: node-pool
           name: guest-cluster03-nodepool-7khv
-          replicas: 1
+          replicas: 2
           metadata:
             annotations:
 #              run.tanzu.vmware.com/resolve-os-image: os-name=photon, content-library=cl-1a6567e672f00e885
