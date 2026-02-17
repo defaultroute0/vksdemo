@@ -18,93 +18,76 @@ Three overlapping causes:
 
 ## Quick Start
 
+Just run it — no arguments needed:
+
 ```bash
-# Make executable (one time)
-chmod +x vks-capi-webhook-troubleshoot.sh
-
-# Diagnose only (safe, read-only)
 ./vks-capi-webhook-troubleshoot.sh
-
-# Diagnose + restart controllers (fixes the issue)
-./vks-capi-webhook-troubleshoot.sh --fix
-
-# Diagnose + restart + regenerate stale cert (if VariablesReconciled=False)
-./vks-capi-webhook-troubleshoot.sh --fix-cert
-
-# Retrieve Supervisor CP VM password from vCenter (for SSH access)
-./vks-capi-webhook-troubleshoot.sh --get-password
 ```
 
-## What It Checks
+This runs all 12 diagnostic checks, then automatically restarts the controllers via SSH to a Supervisor CP VM. All credentials and IPs for this lab are pre-configured.
 
-| Step | Check | What It Verifies |
-|------|-------|------------------|
-| 0 | CP VM Password (optional) | Retrieves root password from vCenter via `decryptK8Pwd.py` |
-| 1 | Connectivity | Ping + HTTPS to Supervisor API VIP and vCenter |
-| 2 | kubectl Context | Active context is a Supervisor context |
-| 3 | ClusterClass Availability | `builtin-generic-v3.4.0` exists in `vmware-system-vks-public` |
-| 4 | TKR Readiness | TanzuKubernetesReleases in READY state |
-| 5 | Existing Clusters | All clusters Provisioned, shows ClusterClass + version |
-| 6 | CAPI Controller Status | All 16 deployments in svc-tkg namespace are healthy |
-| 7 | Webhook Configuration | Mutating/validating webhook configs (requires cluster-scope RBAC) |
-| 8 | VM/Storage Classes | Available VM classes and storage classes |
-| 9 | VKS Package Status | Package reconciliation succeeded |
-| 10 | Key Diagnostics | `VariablesReconciled` condition, x509 cert errors, cert expiry |
-| 11 | Cluster Health | Per-cluster machines, control plane, events |
+## Usage
 
-## Modes
+```
+./vks-capi-webhook-troubleshoot.sh [options]
 
-### Diagnose Only (default)
+By default (no arguments), runs diagnostics AND restarts controllers.
 
-Runs all checks, reports PASS/FAIL/WARN for each, and provides a summary. No changes are made.
+Options:
+  --diagnose-only  Run diagnostics only (no restarts, read-only)
+  --fix-cert       Also delete stale cert if VariablesReconciled=False
+  --get-password   Retrieve Supervisor CP VM root password from vCenter (via SSH)
+  --cp-password    Override CP VM root password (default: pre-configured for this lab)
+  --namespace      Override VKS service namespace (default: auto-detected)
+  --supervisor     Supervisor API VIP (default: 10.1.0.6)
+  --vcenter        vCenter FQDN (default: vc-wld01-a.site-a.vcf.lab)
+  --vc-user        vCenter SSH user (default: root)
+  --vc-password    vCenter SSH password (default: VMware123!VMware123!)
+  --cc-version     ClusterClass version to check (default: builtin-generic-v3.4.0)
+  --help           Show this help message
+```
 
-### --fix (Restart Controllers)
+### Examples
 
-After running diagnostics, restarts the three controllers that cause the webhook error:
-- `vmware-system-tkg-webhook` (stale ClusterClass cache)
-- `runtime-extension-controller-manager` (stale TLS cert)
-- `capi-controller-manager` (re-sync with runtime-extension)
+```bash
+# Default: diagnose + fix (this lab)
+./vks-capi-webhook-troubleshoot.sh
 
-### --fix-cert (Restart + Certificate Regeneration)
+# Diagnose only, no changes
+./vks-capi-webhook-troubleshoot.sh --diagnose-only
 
-Same as `--fix`, plus: if `VariablesReconciled` is still `False` after restarting, deletes the stale `runtime-extension-webhook-service-cert` secret to force regeneration (per KB 424003).
+# Fix + regenerate stale cert if needed
+./vks-capi-webhook-troubleshoot.sh --fix-cert
 
-### --get-password (Retrieve CP VM Password)
+# Use in a different lab environment
+./vks-capi-webhook-troubleshoot.sh --supervisor 10.2.0.6 --vcenter vc-other.lab --cp-password 'otherpass'
+```
 
-SSHes into vCenter and runs `/usr/lib/vmware-wcp/decryptK8Pwd.py` to retrieve the auto-generated Supervisor Control Plane VM root password. Requires `sshpass` for non-interactive operation.
+## What It Does
 
-## Options
+1. Runs 12 diagnostic checks (connectivity, kubectl context, ClusterClass, TKRs, clusters, controllers, webhooks, VM/storage classes, packages, cert health)
+2. Reports PASS/FAIL/WARN for each check
+3. Restarts three key controllers via SSH to a CP VM:
+   - `vmware-system-tkg-webhook` (clears stale ClusterClass cache)
+   - `runtime-extension-controller-manager` (picks up new TLS cert)
+   - `capi-controller-manager` (re-syncs with runtime-extension)
+4. Verifies everything is healthy after the fix
 
-| Flag | Description | Default |
-|------|-------------|---------|
-| `--fix` | Restart controllers after diagnosis | Off |
-| `--fix-cert` | Restart + delete stale cert if needed | Off |
-| `--get-password` | Retrieve CP VM password from vCenter | Off |
-| `--namespace <ns>` | Override VKS service namespace | Auto-detected (`svc-tkg-domain-*`) |
-| `--supervisor <ip>` | Supervisor API VIP | `10.1.0.6` |
-| `--vcenter <fqdn>` | vCenter FQDN | `vc-wld01-a.site-a.vcf.lab` |
-| `--vc-user <user>` | vCenter SSH user | `root` |
-| `--vc-password <pw>` | vCenter SSH password | `VMware123!VMware123!` |
-| `--cc-version <ver>` | ClusterClass version to check | `builtin-generic-v3.4.0` |
+If `kubectl rollout restart` is blocked by the Supervisor admission webhook (normal from an external context), the script automatically SSHes into a CP VM using the embedded password.
+
+## Updating the CP VM Password
+
+The CP VM root password is embedded in the script (line 78). If it changes:
+
+- **Option 1:** Edit line 78 in `vks-capi-webhook-troubleshoot.sh`
+- **Option 2:** Pass `--cp-password 'newpassword'` at runtime
+- **Option 3:** Run `--get-password` to retrieve the current one from vCenter
 
 ## Prerequisites
 
 - `kubectl` configured with a Supervisor context
-- RBAC access to the `svc-tkg-domain-c*` namespace
-- For `--fix`/`--fix-cert`: RBAC to restart deployments (may require CP VM SSH)
-- For `--get-password`: SSH access to vCenter, `sshpass` recommended
+- `sshpass` for CP VM SSH (auto-installed if missing)
 - `jq` and `openssl` for certificate inspection (optional but recommended)
-
-## RBAC Note
-
-If the `--fix` and `--fix-cert` modes detect that `kubectl rollout restart` is blocked by the admission webhook:
-
-```
-admission webhook "admission.vmware.com" denied the request:
-Cannot add toleration for master taint
-```
-
-The script automatically falls back to SSH: it retrieves the CP VM root password from vCenter via `decryptK8Pwd.py`, connects to a Supervisor CP VM, and runs the fix commands with full cluster-admin privileges. No manual intervention needed.
 
 ## Related KBs
 
@@ -117,5 +100,6 @@ The script automatically falls back to SSH: it retrieves the CP VM root password
 
 | File | Description |
 |------|-------------|
-| `vks-capi-webhook-troubleshoot.sh` | All-in-one diagnostic/remediation script with automatic SSH fallback |
+| `vks-capi-webhook-troubleshoot.sh` | All-in-one diagnostic/remediation script |
 | `VKS-CAPI-Webhook-Troubleshooting.md` | Full troubleshooting guide with background and manual steps |
+| `README.md` | This file |
