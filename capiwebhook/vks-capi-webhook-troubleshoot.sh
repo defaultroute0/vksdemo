@@ -9,17 +9,20 @@
 # remediation (controller restarts / cert regeneration).
 #
 # Usage:
-#   ./vks-capi-webhook-troubleshoot.sh [--fix] [--fix-cert] [--namespace <ns>]
+#   ./vks-capi-webhook-troubleshoot.sh [options]
+#
+# By default (no arguments), runs diagnostics AND restarts controllers (--fix).
 #
 # Options:
-#   --fix          Apply Fix Option A (restart controllers)
-#   --fix-cert     Apply Fix Option A + delete stale cert if VariablesReconciled=False
+#   --diagnose-only  Run diagnostics only (no restarts, read-only)
+#   --fix-cert       Also delete stale cert if VariablesReconciled=False
 #   --get-password Retrieve Supervisor CP VM root password from vCenter (via SSH)
 #   --namespace    Override VKS service namespace (default: auto-detected via kubectl)
 #   --supervisor   Supervisor API VIP (default: 10.1.0.6)
 #   --vcenter      vCenter FQDN (default: vc-wld01-a.site-a.vcf.lab)
 #   --vc-user      vCenter SSH user (default: root)
 #   --vc-password  vCenter SSH password (default: VMware123!VMware123!)
+#   --cp-password  Supervisor CP VM root password (default: pre-configured; skips vCenter lookup)
 #   --cc-version   ClusterClass version to check (default: builtin-generic-v3.4.0)
 #   --help         Show this help message
 #
@@ -30,7 +33,7 @@ set -euo pipefail
 # ─────────────────────────────────────────────
 # Defaults
 # ─────────────────────────────────────────────
-FIX=false
+FIX=true
 FIX_CERT=false
 GET_PASSWORD=false
 VKS_NS=""
@@ -40,7 +43,7 @@ VC_USER="root"
 VC_PASSWORD='VMware123!VMware123!'
 CC_VERSION="builtin-generic-v3.4.0"
 CC_PUBLIC_NS="vmware-system-vks-public"
-CP_VM_IPS=("10.1.1.86" "10.1.1.87" "10.1.1.88")
+CP_VM_IPS=("10.1.1.85" "10.1.1.86" "10.1.1.87" "10.1.1.88")
 
 # ─────────────────────────────────────────────
 # Colors / helpers
@@ -73,8 +76,11 @@ check_result() {
 
 # ─────────────────────────────────────────────
 # SSH helpers for CP VM fallback
+# If the CP VM password changes, update it here
+# or retrieve a new one with: --get-password
+# or override at runtime with: --cp-password <pw>
 # ─────────────────────────────────────────────
-CP_VM_PASSWORD=""
+CP_VM_PASSWORD='rAV&C[D=z|9>?iNC'
 CP_VM_CONNECTED=""
 SSH_OPTS="-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null -o PubkeyAuthentication=no -o PreferredAuthentications=password,keyboard-interactive -o ConnectTimeout=10 -o LogLevel=ERROR"
 
@@ -91,30 +97,46 @@ ensure_cp_vm_access() {
         fi
     fi
 
-    # Retrieve CP VM password from vCenter via decryptK8Pwd.py
-    info "Retrieving CP VM password from vCenter (${VCENTER})..."
-    local cp_pwd_output
-    cp_pwd_output=$(sshpass -p "${VC_PASSWORD}" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
-        "${VC_USER}@${VCENTER}" \
-        "/usr/lib/vmware-wcp/decryptK8Pwd.py" 2>&1 || true)
-
-    # Handle VCSA appliance shell
-    if echo "${cp_pwd_output}" | grep -qi "unknown command\|appliancesh"; then
-        info "VCSA appliance shell detected, retrying with 'shell' prefix..."
+    # If password was pre-configured (default or --cp-password), skip vCenter lookup
+    if [[ -n "${CP_VM_PASSWORD}" ]]; then
+        pass "Using pre-configured CP VM password"
+    else
+        # Retrieve CP VM password from vCenter via decryptK8Pwd.py
+        info "Retrieving CP VM password from vCenter (${VCENTER})..."
+        local cp_pwd_output
         cp_pwd_output=$(sshpass -p "${VC_PASSWORD}" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
             "${VC_USER}@${VCENTER}" \
-            "shell /usr/lib/vmware-wcp/decryptK8Pwd.py" 2>&1 || true)
+            "/usr/lib/vmware-wcp/decryptK8Pwd.py" 2>&1 || true)
+
+        # Handle VCSA appliance shell
+        if echo "${cp_pwd_output}" | grep -qi "unknown command\|appliancesh"; then
+            info "VCSA appliance shell detected, retrying with 'shell' prefix..."
+            cp_pwd_output=$(sshpass -p "${VC_PASSWORD}" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
+                "${VC_USER}@${VCENTER}" \
+                "shell /usr/lib/vmware-wcp/decryptK8Pwd.py" 2>&1 || true)
+        fi
+
+        CP_VM_PASSWORD=$(echo "${cp_pwd_output}" | grep -m1 "^PWD:" | awk '{print $2}')
+        local dynamic_ip
+        dynamic_ip=$(echo "${cp_pwd_output}" | grep -m1 "^IP:" | awk '{print $2}')
+
+        if [[ -z "${CP_VM_PASSWORD}" ]]; then
+            fail "Could not retrieve CP VM password from vCenter"
+            warn "Manual steps: ssh ${VC_USER}@${VCENTER}, then run /usr/lib/vmware-wcp/decryptK8Pwd.py"
+            return 1
+        fi
+
+        pass "CP VM password retrieved from vCenter"
+
+        # Prepend dynamic IP from decryptK8Pwd.py if available
+        if [[ -n "${dynamic_ip}" ]]; then
+            local new_ips=("${dynamic_ip}")
+            for ip in "${CP_VM_IPS[@]}"; do
+                [[ "${ip}" != "${dynamic_ip}" ]] && new_ips+=("${ip}")
+            done
+            CP_VM_IPS=("${new_ips[@]}")
+        fi
     fi
-
-    CP_VM_PASSWORD=$(echo "${cp_pwd_output}" | grep -m1 "^PWD:" | awk '{print $2}')
-
-    if [[ -z "${CP_VM_PASSWORD}" ]]; then
-        fail "Could not retrieve CP VM password from vCenter"
-        warn "Manual steps: ssh ${VC_USER}@${VCENTER}, then run /usr/lib/vmware-wcp/decryptK8Pwd.py"
-        return 1
-    fi
-
-    pass "CP VM password retrieved successfully"
 
     # Try each CP VM IP until one accepts SSH
     export SSHPASS="${CP_VM_PASSWORD}"
@@ -146,6 +168,7 @@ usage() {
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --diagnose-only) FIX=false; FIX_CERT=false; shift ;;
         --fix)        FIX=true;      shift ;;
         --fix-cert)   FIX_CERT=true; FIX=true; shift ;;
         --get-password) GET_PASSWORD=true; shift ;;
@@ -154,6 +177,7 @@ while [[ $# -gt 0 ]]; do
         --vcenter)    VCENTER="$2";  shift 2 ;;
         --vc-user)    VC_USER="$2";  shift 2 ;;
         --vc-password)VC_PASSWORD="$2"; shift 2 ;;
+        --cp-password)CP_VM_PASSWORD="$2"; shift 2 ;;
         --cc-version) CC_VERSION="$2"; shift 2 ;;
         --help|-h)    usage ;;
         *) echo "Unknown option: $1"; usage ;;
