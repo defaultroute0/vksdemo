@@ -167,7 +167,7 @@ kubectl get deployment -n svc-tkg-domain-c10 vmware-system-tkg-webhook
 1. The script SSHes into vCenter (`vc-wld01-a.site-a.vcf.lab`) using the vCenter root password
 2. It runs `/usr/lib/vmware-wcp/decryptK8Pwd.py` — a VMware utility that decrypts the auto-generated root password for the Supervisor CP VMs (this password is different from the vCenter password and is unique to each lab instance)
 3. It parses the `PWD:` line from the output to get the CP VM password
-4. It tries SSHing to each CP VM IP (10.1.1.86, 10.1.1.87, 10.1.1.88) until one responds
+4. It tries SSHing to each CP VM IP (10.1.1.85, 10.1.1.86, 10.1.1.87, 10.1.1.88) until one responds
 5. It runs the fix commands on the CP VM, where kubectl has full cluster-admin privileges
 
 **If you need to do this manually:**
@@ -182,7 +182,7 @@ ssh root@vc-wld01-a.site-a.vcf.lab
 #  Output shows PWD: <generated-password>
 
 # Step 2: SSH into a CP VM (NOT the API VIP)
-ssh root@10.1.1.86
+ssh root@10.1.1.85
 #  Password: the PWD value from decryptK8Pwd.py
 ```
 
@@ -615,10 +615,10 @@ kubectl get events -n <NAMESPACE> --sort-by='.lastTimestamp' | tail -20
 | Supervisor API VIP | 10.1.0.6 (port 443 only, no SSH) |
 | VCFA | auto-a.site-a.vcf.lab |
 | Supervisor Context | `supervisor` |
-| Supervisor CP VMs | 10.1.1.86, 10.1.1.87, 10.1.1.88 |
+| Supervisor CP VMs | 10.1.1.85, 10.1.1.86, 10.1.1.87, 10.1.1.88 |
 | VKS Service Namespace | `svc-tkg-domain-c10` |
 | vCenter SSH password | `VMware123!VMware123!` |
-| CP VM SSH password | Retrieved dynamically via `decryptK8Pwd.py` (unique per lab) |
+| CP VM SSH password | `rAV&C[D=z|9>?iNC` (embedded in script; if it changes, update script line 78 or use `--cp-password`) |
 
 **Current ClusterClass versions on this Supervisor:**
 - `builtin-generic-v3.1.0` (all namespaces, replicated)
