@@ -36,9 +36,9 @@ By default (no arguments), runs diagnostics AND restarts controllers.
 Options:
   --diagnose-only  Run diagnostics only (no restarts, read-only)
   --fix-cert       Also delete stale cert if VariablesReconciled=False
-  --get-password   Retrieve Supervisor CP VM root password from vCenter (via SSH)
+  --get-password   Show manual steps to retrieve CP VM password; test if current one works
   --cp-password    Override CP VM root password (default: pre-configured for this lab)
-  --namespace      Override VKS service namespace (default: auto-detected)
+  --namespace      Override VKS service namespace (default: svc-tkg-domain-c10)
   --supervisor     Supervisor API VIP (default: 10.1.0.6)
   --vcenter        vCenter FQDN (default: vc-wld01-a.site-a.vcf.lab)
   --vc-user        vCenter SSH user (default: root)
@@ -73,15 +73,17 @@ Options:
    - `capi-controller-manager` (re-syncs with runtime-extension)
 4. Verifies everything is healthy after the fix
 
-If `kubectl rollout restart` is blocked by the Supervisor admission webhook (normal from an external context), the script automatically SSHes into a CP VM using the embedded password.
+The script automatically detects if the local kubectl context is namespace-scoped (limited RBAC). When it is, it establishes an SSH connection to a Supervisor CP VM early and runs **all** diagnostic and remediation commands via SSH, ensuring full visibility regardless of the kubectl context.
 
 ## Updating the CP VM Password
 
-The CP VM root password is embedded in the script (line 78). If it changes:
+The CP VM root password is embedded in the script (line 86). If it changes (e.g. after a Supervisor upgrade or controller restarts):
 
-- **Option 1:** Edit line 78 in `vks-capi-webhook-troubleshoot.sh`
+- **Option 1:** Edit line 86 in `vks-capi-webhook-troubleshoot.sh`
 - **Option 2:** Pass `--cp-password 'newpassword'` at runtime
-- **Option 3:** Run `--get-password` to retrieve the current one from vCenter
+- **Option 3:** Retrieve manually: `ssh root@<vcenter>` then `shell` then `/usr/lib/vmware-wcp/decryptK8Pwd.py`
+
+> **Note:** VCSA 9.0 appliancesh blocks non-interactive SSH commands, so the password cannot be retrieved automatically.
 
 ## Prerequisites
 
