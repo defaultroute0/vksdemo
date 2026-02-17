@@ -16,8 +16,8 @@
 # Options:
 #   --diagnose-only  Run diagnostics only (no restarts, read-only)
 #   --fix-cert       Also delete stale cert if VariablesReconciled=False
-#   --get-password Retrieve Supervisor CP VM root password from vCenter (via SSH)
-#   --namespace    Override VKS service namespace (default: auto-detected via kubectl)
+#   --get-password Show manual steps to retrieve CP VM password; test if current one works
+#   --namespace    Override VKS service namespace (default: svc-tkg-domain-c10)
 #   --supervisor   Supervisor API VIP (default: 10.1.0.6)
 #   --vcenter      vCenter FQDN (default: vc-wld01-a.site-a.vcf.lab)
 #   --vc-user      vCenter SSH user (default: root)
@@ -36,7 +36,7 @@ set -euo pipefail
 FIX=true
 FIX_CERT=false
 GET_PASSWORD=false
-VKS_NS=""
+VKS_NS="svc-tkg-domain-c10"
 SUPERVISOR_IP="10.1.0.6"
 VCENTER="vc-wld01-a.site-a.vcf.lab"
 VC_USER="root"
@@ -76,9 +76,12 @@ check_result() {
 
 # ─────────────────────────────────────────────
 # SSH helpers for CP VM fallback
-# If the CP VM password changes, update it here
-# or retrieve a new one with: --get-password
-# or override at runtime with: --cp-password <pw>
+# If the CP VM password changes after a Supervisor upgrade,
+# retrieve a new one manually:
+#   ssh root@<vcenter> → shell → /usr/lib/vmware-wcp/decryptK8Pwd.py
+# Then update here or override at runtime with: --cp-password <pw>
+# NOTE: VCSA 9.0 appliancesh blocks non-interactive SSH commands,
+#       so dynamic retrieval via SSH is not possible.
 # ─────────────────────────────────────────────
 CP_VM_PASSWORD='rAV&C[D=z|9>?iNC'
 CP_VM_CONNECTED=""
@@ -97,45 +100,11 @@ ensure_cp_vm_access() {
         fi
     fi
 
-    # If password was pre-configured (default or --cp-password), skip vCenter lookup
-    if [[ -n "${CP_VM_PASSWORD}" ]]; then
-        pass "Using pre-configured CP VM password"
-    else
-        # Retrieve CP VM password from vCenter via decryptK8Pwd.py
-        info "Retrieving CP VM password from vCenter (${VCENTER})..."
-        local cp_pwd_output
-        cp_pwd_output=$(sshpass -p "${VC_PASSWORD}" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
-            "${VC_USER}@${VCENTER}" \
-            "/usr/lib/vmware-wcp/decryptK8Pwd.py" 2>&1 || true)
-
-        # Handle VCSA appliance shell
-        if echo "${cp_pwd_output}" | grep -qi "unknown command\|appliancesh"; then
-            info "VCSA appliance shell detected, retrying with 'shell' prefix..."
-            cp_pwd_output=$(sshpass -p "${VC_PASSWORD}" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
-                "${VC_USER}@${VCENTER}" \
-                "shell /usr/lib/vmware-wcp/decryptK8Pwd.py" 2>&1 || true)
-        fi
-
-        CP_VM_PASSWORD=$(echo "${cp_pwd_output}" | grep -m1 "^PWD:" | awk '{print $2}')
-        local dynamic_ip
-        dynamic_ip=$(echo "${cp_pwd_output}" | grep -m1 "^IP:" | awk '{print $2}')
-
-        if [[ -z "${CP_VM_PASSWORD}" ]]; then
-            fail "Could not retrieve CP VM password from vCenter"
-            warn "Manual steps: ssh ${VC_USER}@${VCENTER}, then run /usr/lib/vmware-wcp/decryptK8Pwd.py"
-            return 1
-        fi
-
-        pass "CP VM password retrieved from vCenter"
-
-        # Prepend dynamic IP from decryptK8Pwd.py if available
-        if [[ -n "${dynamic_ip}" ]]; then
-            local new_ips=("${dynamic_ip}")
-            for ip in "${CP_VM_IPS[@]}"; do
-                [[ "${ip}" != "${dynamic_ip}" ]] && new_ips+=("${ip}")
-            done
-            CP_VM_IPS=("${new_ips[@]}")
-        fi
+    if [[ -z "${CP_VM_PASSWORD}" ]]; then
+        fail "No CP VM password configured"
+        warn "Retrieve it manually: ssh root@${VCENTER} → shell → /usr/lib/vmware-wcp/decryptK8Pwd.py"
+        warn "Then re-run with: --cp-password <password>"
+        return 1
     fi
 
     # Try each CP VM IP until one accepts SSH
@@ -150,12 +119,26 @@ ensure_cp_vm_access() {
     done
 
     fail "Could not SSH into any CP VM (${CP_VM_IPS[*]})"
-    warn "SSH may be disabled. Use vCenter Console to run the commands manually."
+    warn "Password may have changed after Supervisor upgrade."
+    warn "Retrieve new password: ssh root@${VCENTER} → shell → /usr/lib/vmware-wcp/decryptK8Pwd.py"
+    warn "Then re-run with: --cp-password <new-password>"
     return 1
 }
 
 run_on_cp_vm() {
     sshpass -e ssh ${SSH_OPTS} root@"${CP_VM_CONNECTED}" "$1" 2>&1
+}
+
+# Unified kubectl runner: uses SSH if connected to CP VM, otherwise local kubectl.
+# Takes the full kubectl command as a single string argument.
+USE_SSH=false
+run_kubectl() {
+    local cmd="$1"
+    if $USE_SSH && [[ -n "${CP_VM_CONNECTED}" ]]; then
+        run_on_cp_vm "${cmd}"
+    else
+        eval "${cmd}" 2>/dev/null
+    fi
 }
 
 # ─────────────────────────────────────────────
@@ -199,74 +182,56 @@ echo "  Mode:           $(if $FIX_CERT; then echo 'DIAGNOSE + FIX + CERT REGEN';
 
 
 # ═════════════════════════════════════════════
-# STEP 0 (optional): Retrieve Supervisor CP VM Password
+# STEP 0 (optional): Show how to retrieve Supervisor CP VM Password
+# NOTE: VCSA 9.0 appliancesh blocks non-interactive SSH commands,
+#       so this can only provide manual instructions.
 # ═════════════════════════════════════════════
 if $GET_PASSWORD; then
     header "Step 0: Retrieve Supervisor CP VM Root Password"
 
     divider
-    info "SSHing into vCenter (${VCENTER}) as ${VC_USER} to run decryptK8Pwd.py..."
-    info "This retrieves the auto-generated root password for the Supervisor CP VMs."
+    warn "VCSA 9.0 appliancesh blocks non-interactive SSH command execution."
+    warn "The CP VM password must be retrieved manually."
+    echo ""
+    info "Manual steps to retrieve the password:"
+    echo ""
+    echo "  1. SSH into vCenter:"
+    echo "     ssh ${VC_USER}@${VCENTER}"
+    echo ""
+    echo "  2. At the VCSA appliancesh prompt, switch to bash:"
+    echo "     Command> shell"
+    echo ""
+    echo "  3. Run the password decryption script:"
+    echo "     /usr/lib/vmware-wcp/decryptK8Pwd.py"
+    echo ""
+    echo "  4. Note the PWD value from the output, then re-run this script:"
+    echo "     $0 --cp-password <the-password>"
+    echo ""
+    echo "  Or update the CP_VM_PASSWORD variable in this script (line ~83)."
     echo ""
 
-    # Check if sshpass is available for non-interactive SSH
-    if ! command -v sshpass &>/dev/null; then
-        warn "sshpass not installed. Attempting with SSH key-based auth or interactive prompt..."
-        CP_PWD_OUTPUT=$(ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
-            "${VC_USER}@${VCENTER}" \
-            "shell -c '/usr/lib/vmware-wcp/decryptK8Pwd.py'" 2>&1 || true)
-    else
-        CP_PWD_OUTPUT=$(sshpass -p "${VC_PASSWORD}" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
-            "${VC_USER}@${VCENTER}" \
-            "/usr/lib/vmware-wcp/decryptK8Pwd.py" 2>&1 || true)
-
-        # If the VCSA drops us into appliancesh, try wrapping in shell
-        if echo "${CP_PWD_OUTPUT}" | grep -qi "unknown command\|appliancesh"; then
-            info "VCSA appliance shell detected, retrying with 'shell' prefix..."
-            CP_PWD_OUTPUT=$(sshpass -p "${VC_PASSWORD}" ssh -o StrictHostKeyChecking=no -o ConnectTimeout=10 \
-                "${VC_USER}@${VCENTER}" \
-                "shell /usr/lib/vmware-wcp/decryptK8Pwd.py" 2>&1 || true)
-        fi
-    fi
-
-    # Parse the password from the output
-    # decryptK8Pwd.py output format:
-    #   Read
-
-
-    #   Cluster: domain-c10
-    #   IP: 10.1.1.86
-    #   PWD: <the-password>
-    #   ...
-    CP_VM_PASSWORD=$(echo "${CP_PWD_OUTPUT}" | grep -m1 "^PWD:" | awk '{print $2}' || true)
-    CP_VM_IP_FROM_OUTPUT=$(echo "${CP_PWD_OUTPUT}" | grep -m1 "^IP:" | awk '{print $2}' || true)
-
     if [[ -n "${CP_VM_PASSWORD}" ]]; then
-        pass "Successfully retrieved Supervisor CP VM password"
+        info "Current hardcoded password: ${CP_VM_PASSWORD}"
+        info "Testing if it still works..."
         echo ""
-        echo -e "  ${BOLD}Supervisor CP VM Credentials:${NC}"
-        echo -e "  ─────────────────────────────────────────"
-        if [[ -n "${CP_VM_IP_FROM_OUTPUT}" ]]; then
-            echo -e "  CP VM IP:   ${CP_VM_IP_FROM_OUTPUT}"
+
+        if command -v sshpass &>/dev/null; then
+            export SSHPASS="${CP_VM_PASSWORD}"
+            PASS_WORKS=false
+            for ip in "${CP_VM_IPS[@]}"; do
+                if sshpass -e ssh ${SSH_OPTS} root@"${ip}" "echo ok" 2>/dev/null; then
+                    pass "Hardcoded password works on CP VM ${ip}"
+                    PASS_WORKS=true
+                    break
+                fi
+            done
+            if ! $PASS_WORKS; then
+                fail "Hardcoded password no longer works on any CP VM"
+                warn "Password has likely changed — follow the manual steps above"
+            fi
+        else
+            warn "sshpass not installed, cannot test password"
         fi
-        echo -e "  User:       root"
-        echo -e "  Password:   ${CP_VM_PASSWORD}"
-        echo -e "  ─────────────────────────────────────────"
-        echo ""
-        echo -e "  ${CYAN}SSH command:${NC}  ssh root@${CP_VM_IP_FROM_OUTPUT:-${CP_VM_IPS[0]}}"
-        echo ""
-    else
-        fail "Could not retrieve CP VM password from vCenter"
-        echo ""
-        echo "  Raw output from SSH attempt:"
-        echo "  ${CP_PWD_OUTPUT}" | head -20
-        echo ""
-        warn "Manual steps:"
-        warn "  1. ssh ${VC_USER}@${VCENTER}"
-        warn "  2. Type 'shell' if you get the VCSA appliance prompt"
-        warn "  3. Run: /usr/lib/vmware-wcp/decryptK8Pwd.py"
-        warn "  4. Note the PWD value"
-        echo ""
     fi
 fi
 
@@ -361,7 +326,27 @@ if [[ -z "${VKS_NS}" ]]; then
     fi
     pass "Auto-detected VKS namespace: ${VKS_NS}"
 else
-    info "Using provided namespace: ${VKS_NS}"
+    info "Using namespace: ${VKS_NS}"
+fi
+echo ""
+
+# ═════════════════════════════════════════════
+# STEP 2c: Detect kubectl access level & establish SSH if needed
+# ═════════════════════════════════════════════
+divider
+echo "  Testing kubectl cluster-wide access..."
+if kubectl get clusterclass -A --no-headers &>/dev/null 2>&1; then
+    pass "Local kubectl has cluster-wide access"
+else
+    warn "Local kubectl is namespace-scoped (cannot see cluster-wide resources)"
+    info "Establishing SSH to Supervisor CP VM for full diagnostics..."
+    echo ""
+    if ensure_cp_vm_access; then
+        USE_SSH=true
+        info "All diagnostic commands will run via SSH on ${CP_VM_CONNECTED}"
+    else
+        warn "SSH fallback not available — some diagnostic checks will be limited"
+    fi
 fi
 echo ""
 
@@ -374,12 +359,12 @@ header "Step 3: Check ClusterClass Availability"
 divider
 echo "  Listing all ClusterClasses across namespaces..."
 echo ""
-kubectl get clusterclass -A 2>/dev/null || warn "Could not list ClusterClasses"
+run_kubectl "kubectl get clusterclass -A" || warn "Could not list ClusterClasses"
 echo ""
 
 # Check v3.4.0 in public namespace
 echo "  Checking ${CC_VERSION} in ${CC_PUBLIC_NS}..."
-if kubectl get clusterclass "${CC_VERSION}" -n "${CC_PUBLIC_NS}" &>/dev/null; then
+if run_kubectl "kubectl get clusterclass ${CC_VERSION} -n ${CC_PUBLIC_NS}" &>/dev/null; then
     pass "${CC_VERSION} exists in ${CC_PUBLIC_NS}"
     check_result 0
 else
@@ -391,8 +376,12 @@ fi
 # Show ClusterClass details
 divider
 echo "  ClusterClass description (first 40 lines):"
-CC_DESC=$(kubectl describe clusterclass "${CC_VERSION}" -n "${CC_PUBLIC_NS}" 2>/dev/null || true)
-echo "${CC_DESC}" | head -40 || warn "Could not describe ${CC_VERSION}"
+CC_DESC=$(run_kubectl "kubectl describe clusterclass ${CC_VERSION} -n ${CC_PUBLIC_NS}" || true)
+if [[ -n "${CC_DESC}" ]]; then
+    echo "${CC_DESC}" | head -40
+else
+    warn "Could not describe ${CC_VERSION}"
+fi
 echo ""
 
 
@@ -404,12 +393,13 @@ header "Step 4: Check Available Kubernetes Releases"
 divider
 echo "  TanzuKubernetesReleases (READY=True):"
 echo ""
-TKR_OUTPUT=$(kubectl get tanzukubernetesreleases 2>/dev/null || true)
+TKR_OUTPUT=$(run_kubectl "kubectl get tanzukubernetesreleases" || true)
 echo "${TKR_OUTPUT}" | head -1
 echo "${TKR_OUTPUT}" | grep -i true || warn "No READY TKRs found"
 echo ""
 
 READY_COUNT=$(echo "${TKR_OUTPUT}" | grep -ci true || echo 0)
+READY_COUNT=$(echo "${READY_COUNT}" | awk '{s+=$1} END {print s+0}')
 if [[ "${READY_COUNT}" -gt 0 ]]; then
     pass "${READY_COUNT} TKR(s) in READY state"
     check_result 0
@@ -427,7 +417,7 @@ header "Step 5: Check Existing Clusters"
 divider
 echo "  All CAPI clusters:"
 echo ""
-kubectl get clusters -A 2>/dev/null || warn "Could not list clusters"
+run_kubectl "kubectl get clusters -A" || warn "Could not list clusters"
 echo ""
 
 # Iterate clusters and show phase
@@ -435,8 +425,8 @@ while IFS= read -r line; do
     [[ -z "${line}" ]] && continue
     CL_NS=$(echo "${line}" | awk '{print $1}')
     CL_NAME=$(echo "${line}" | awk '{print $2}')
-    CL_PHASE=$(kubectl get cluster "${CL_NAME}" -n "${CL_NS}" -o jsonpath='{.status.phase}' 2>/dev/null || echo "Unknown")
-    CL_CC=$(kubectl get cluster "${CL_NAME}" -n "${CL_NS}" -o jsonpath='{.spec.topology.class}' 2>/dev/null || echo "Unknown")
+    CL_PHASE=$(run_kubectl "kubectl get cluster ${CL_NAME} -n ${CL_NS} -o jsonpath='{.status.phase}'" || echo "Unknown")
+    CL_CC=$(run_kubectl "kubectl get cluster ${CL_NAME} -n ${CL_NS} -o jsonpath='{.spec.topology.class}'" || echo "Unknown")
 
     if [[ "${CL_PHASE}" == "Provisioned" ]]; then
         pass "Cluster ${CL_NAME} (${CL_NS}): phase=${CL_PHASE}, class=${CL_CC}"
@@ -445,7 +435,7 @@ while IFS= read -r line; do
     else
         fail "Cluster ${CL_NAME} (${CL_NS}): phase=${CL_PHASE}, class=${CL_CC}"
     fi
-done < <(kubectl get clusters -A --no-headers 2>/dev/null || true)
+done < <(run_kubectl "kubectl get clusters -A --no-headers" || true)
 echo ""
 
 
@@ -457,13 +447,15 @@ header "Step 6: Check CAPI Controller Status"
 divider
 echo "  Deployments in ${VKS_NS}:"
 echo ""
-kubectl get deployments -n "${VKS_NS}" 2>/dev/null || warn "Could not list deployments"
+run_kubectl "kubectl get deployments -n ${VKS_NS}" || warn "Could not list deployments"
 echo ""
 
 # Check each deployment for readiness
 UNHEALTHY_DEPLOYMENTS=0
+DEPLOYMENT_COUNT=0
 while IFS= read -r line; do
     [[ -z "${line}" ]] && continue
+    DEPLOYMENT_COUNT=$((DEPLOYMENT_COUNT + 1))
     DEP_NAME=$(echo "${line}" | awk '{print $1}')
     DEP_READY=$(echo "${line}" | awk '{print $2}')
     DESIRED=$(echo "${DEP_READY}" | cut -d'/' -f2)
@@ -475,24 +467,27 @@ while IFS= read -r line; do
         fail "${DEP_NAME}: ${DEP_READY} (not fully ready)"
         UNHEALTHY_DEPLOYMENTS=$((UNHEALTHY_DEPLOYMENTS + 1))
     fi
-done < <(kubectl get deployments -n "${VKS_NS}" --no-headers 2>/dev/null || true)
+done < <(run_kubectl "kubectl get deployments -n ${VKS_NS} --no-headers" || true)
 
-if [[ ${UNHEALTHY_DEPLOYMENTS} -eq 0 ]]; then
+if [[ ${DEPLOYMENT_COUNT} -eq 0 ]]; then
+    warn "Could not retrieve deployment status (RBAC or namespace access issue)"
+    check_result 1 || true
+elif [[ ${UNHEALTHY_DEPLOYMENTS} -eq 0 ]]; then
     check_result 0
-    pass "All deployments healthy"
+    pass "All ${DEPLOYMENT_COUNT} deployments healthy"
 else
     check_result 1 || true
-    fail "${UNHEALTHY_DEPLOYMENTS} deployment(s) not fully ready"
+    fail "${UNHEALTHY_DEPLOYMENTS} of ${DEPLOYMENT_COUNT} deployment(s) not fully ready"
 fi
 echo ""
 
 # Check CAPW / CAPV pods
 divider
 echo "  CAPW pods (vmware-system-capw):"
-kubectl get pods -n vmware-system-capw 2>/dev/null || warn "Could not list CAPW pods"
+run_kubectl "kubectl get pods -n vmware-system-capw" || warn "Could not list CAPW pods"
 echo ""
 echo "  CAPV pods (vmware-system-capv):"
-kubectl get pods -n vmware-system-capv 2>/dev/null || warn "Could not list CAPV pods"
+run_kubectl "kubectl get pods -n vmware-system-capv" || warn "Could not list CAPV pods"
 echo ""
 
 
@@ -503,20 +498,18 @@ header "Step 7: Check Webhook Configuration"
 
 divider
 echo "  Mutating webhooks (CAPI/TKG-related):"
-MWH_OUTPUT=$(kubectl get mutatingwebhookconfigurations 2>&1 || true)
+MWH_OUTPUT=$(run_kubectl "kubectl get mutatingwebhookconfigurations" 2>&1 || true)
 if echo "${MWH_OUTPUT}" | grep -qi "forbidden\|cannot"; then
-    warn "Insufficient RBAC to list mutating webhooks (cluster-scope required)"
-    info "This is expected with namespace-scoped Supervisor contexts"
-    info "SSH into a CP VM for full webhook inspection"
+    warn "Insufficient RBAC to list mutating webhooks"
 else
     echo "${MWH_OUTPUT}" | grep -iE "NAME|capi|tkg|tanzu" || warn "No CAPI/TKG mutating webhooks found"
 fi
 echo ""
 
 echo "  Validating webhooks (CAPI/TKG-related):"
-VWH_OUTPUT=$(kubectl get validatingwebhookconfigurations 2>&1 || true)
+VWH_OUTPUT=$(run_kubectl "kubectl get validatingwebhookconfigurations" 2>&1 || true)
 if echo "${VWH_OUTPUT}" | grep -qi "forbidden\|cannot"; then
-    warn "Insufficient RBAC to list validating webhooks (cluster-scope required)"
+    warn "Insufficient RBAC to list validating webhooks"
 else
     echo "${VWH_OUTPUT}" | grep -iE "NAME|capi|tkg|tanzu" || warn "No CAPI/TKG validating webhooks found"
 fi
@@ -530,11 +523,11 @@ header "Step 8: Check VM Classes and Storage Classes"
 
 divider
 echo "  Storage classes:"
-kubectl get storageclasses 2>/dev/null || warn "Could not list storage classes"
+run_kubectl "kubectl get storageclasses" || warn "Could not list storage classes"
 echo ""
 
 echo "  VM classes (first 20):"
-VM_CLASSES=$(kubectl get virtualmachineclasses --no-headers 2>/dev/null || true)
+VM_CLASSES=$(run_kubectl "kubectl get virtualmachineclasses --no-headers" || true)
 echo "${VM_CLASSES}" | head -20
 [[ -z "${VM_CLASSES}" ]] && warn "Could not list VM classes"
 echo ""
@@ -547,16 +540,15 @@ header "Step 9: Check VKS Package Installation Status"
 
 divider
 echo "  VKS-related package installs:"
-kubectl get packageinstalls -A 2>/dev/null | grep -E "NAME|vks|tkg|svc-tkg" || warn "No VKS package installs found"
+run_kubectl "kubectl get packageinstalls -A" | grep -E "NAME|vks|tkg|svc-tkg" || warn "No VKS package installs found"
 echo ""
 
 echo "  VKS-related kapp apps:"
-kubectl get apps -A 2>/dev/null | grep -E "NAME|vks|tkg|svc-tkg" || warn "No VKS kapp apps found"
+run_kubectl "kubectl get apps -A" | grep -E "NAME|vks|tkg|svc-tkg" || warn "No VKS kapp apps found"
 echo ""
 
 # Check reconciliation status
-# The DESCRIPTION column is 6th field; look for "Reconcile succeeded" in the full line
-RECONCILE_LINE=$(kubectl get packageinstalls -A --no-headers 2>/dev/null | grep "svc-tkg\.vsphere\.vmware\.com" | head -1 || echo "")
+RECONCILE_LINE=$(run_kubectl "kubectl get packageinstalls -A --no-headers" | grep "svc-tkg\.vsphere\.vmware\.com" | head -1 || echo "")
 if echo "${RECONCILE_LINE}" | grep -qi "Reconcile succeeded"; then
     pass "VKS package reconciliation: Reconcile succeeded"
     check_result 0
@@ -581,11 +573,15 @@ divider
 echo "  Checking ClusterClass VariablesReconciled condition..."
 
 VARS_RECONCILED="Unknown"
-CC_CONDITIONS=$(kubectl get clusterclass "${CC_VERSION}" -n "${VKS_NS}" -o jsonpath='{.status.conditions}' 2>/dev/null || \
-                kubectl get clusterclass "${CC_VERSION}" -n "${CC_PUBLIC_NS}" -o jsonpath='{.status.conditions}' 2>/dev/null || \
-                echo "")
+CC_CONDITIONS=$(run_kubectl "kubectl get clusterclass ${CC_VERSION} -n ${CC_PUBLIC_NS} -o jsonpath='{.status.conditions}'" 2>/dev/null || echo "")
+# Fallback: try VKS service namespace if public namespace didn't work
+if [[ -z "${CC_CONDITIONS}" ]] || echo "${CC_CONDITIONS}" | grep -qi "NotFound\|error"; then
+    CC_CONDITIONS=$(run_kubectl "kubectl get clusterclass ${CC_VERSION} -n ${VKS_NS} -o jsonpath='{.status.conditions}'" 2>/dev/null || echo "")
+fi
+# Strip any leading/trailing single quotes from jsonpath output
+CC_CONDITIONS=$(echo "${CC_CONDITIONS}" | sed "s/^'//;s/'$//")
 
-if [[ -n "${CC_CONDITIONS}" ]]; then
+if [[ -n "${CC_CONDITIONS}" ]] && ! echo "${CC_CONDITIONS}" | grep -qi "NotFound\|error"; then
     if command -v jq &>/dev/null; then
         echo "${CC_CONDITIONS}" | jq '.' 2>/dev/null || echo "${CC_CONDITIONS}"
         VARS_RECONCILED=$(echo "${CC_CONDITIONS}" | jq -r '.[] | select(.type=="VariablesReconciled") | .status' 2>/dev/null || echo "Unknown")
@@ -612,7 +608,7 @@ fi
 # 10b. Check runtime-extension logs for x509 errors
 divider
 echo "  Checking runtime-extension-controller-manager logs for cert errors..."
-CERT_ERRORS=$(kubectl logs -n "${VKS_NS}" -l app=runtime-extension-controller-manager --tail=100 2>/dev/null | grep -c "x509" || true)
+CERT_ERRORS=$(run_kubectl "kubectl logs -n ${VKS_NS} -l app=runtime-extension-controller-manager --tail=100" | grep -c "x509" || true)
 CERT_ERRORS=${CERT_ERRORS:-0}
 # Ensure it's a single integer (grep -c across multiple containers can produce multiple lines)
 CERT_ERRORS=$(echo "${CERT_ERRORS}" | awk '{s+=$1} END {print s+0}')
@@ -623,7 +619,7 @@ if [[ "${CERT_ERRORS}" -gt 0 ]]; then
     check_result 1 || true
     echo ""
     echo "  Last 5 x509-related log lines:"
-    kubectl logs -n "${VKS_NS}" -l app=runtime-extension-controller-manager --tail=200 2>/dev/null | grep "x509" | tail -5
+    run_kubectl "kubectl logs -n ${VKS_NS} -l app=runtime-extension-controller-manager --tail=200" | grep "x509" | tail -5
 else
     pass "No x509 certificate errors in runtime-extension logs"
     check_result 0
@@ -633,8 +629,7 @@ echo ""
 # 10c. Check webhook certificate validity
 divider
 echo "  Checking webhook certificate validity..."
-CERT_DATA=$(kubectl get secret runtime-extension-webhook-service-cert -n "${VKS_NS}" \
-    -o jsonpath='{.data.ca\.crt}' 2>/dev/null || echo "")
+CERT_DATA=$(run_kubectl "kubectl get secret runtime-extension-webhook-service-cert -n ${VKS_NS} -o jsonpath='{.data.ca\\.crt}'" || echo "")
 
 if [[ -n "${CERT_DATA}" ]]; then
     CERT_INFO=$(echo "${CERT_DATA}" | base64 -d 2>/dev/null | openssl x509 -noout -dates -serial 2>/dev/null || echo "DECODE_ERROR")
@@ -687,18 +682,18 @@ while IFS= read -r line; do
     echo "  --- Cluster: ${CL_NAME} (${CL_NS}) ---"
 
     echo "  Machines:"
-    kubectl get machines -n "${CL_NS}" 2>/dev/null | grep -E "NAME|${CL_NAME}" || echo "    (none)"
+    run_kubectl "kubectl get machines -n ${CL_NS}" | grep -E "NAME|${CL_NAME}" || echo "    (none)"
 
     echo "  Control Plane:"
-    kubectl get kubeadmcontrolplanes -n "${CL_NS}" 2>/dev/null | grep -E "NAME|${CL_NAME}" || echo "    (none)"
+    run_kubectl "kubectl get kubeadmcontrolplanes -n ${CL_NS}" | grep -E "NAME|${CL_NAME}" || echo "    (none)"
 
     echo "  Machine Deployments:"
-    kubectl get machinedeployments -n "${CL_NS}" 2>/dev/null | grep -E "NAME|${CL_NAME}" || echo "    (none)"
+    run_kubectl "kubectl get machinedeployments -n ${CL_NS}" | grep -E "NAME|${CL_NAME}" || echo "    (none)"
 
     echo "  Recent events (last 10):"
-    kubectl get events -n "${CL_NS}" --sort-by='.lastTimestamp' --no-headers 2>/dev/null | tail -10 || echo "    (none)"
+    run_kubectl "kubectl get events -n ${CL_NS} --sort-by='.lastTimestamp' --no-headers" | tail -10 || echo "    (none)"
     echo ""
-done < <(kubectl get clusters -A --no-headers 2>/dev/null || true)
+done < <(run_kubectl "kubectl get clusters -A --no-headers" || true)
 
 
 # ═════════════════════════════════════════════
@@ -728,63 +723,33 @@ echo ""
 # ═════════════════════════════════════════════
 if $FIX; then
     header "Remediation: Restarting Controllers"
-
     echo ""
-    USE_SSH=false
 
-    # ── Try kubectl from current context first ──
-    info "Trying kubectl rollout restart from current context..."
-    echo ""
+    # Ensure SSH is available if not already established during diagnostics
+    if ! $USE_SSH; then
+        info "Trying kubectl rollout restart from current context..."
+        echo ""
+    fi
 
     echo "  1/3: Restarting vmware-system-tkg-webhook..."
-    if kubectl rollout restart deployment vmware-system-tkg-webhook -n "${VKS_NS}" 2>/dev/null; then
+    if run_kubectl "kubectl rollout restart deployment vmware-system-tkg-webhook -n ${VKS_NS}"; then
         pass "vmware-system-tkg-webhook restart initiated"
-
-        echo "  2/3: Restarting runtime-extension-controller-manager..."
-        if kubectl rollout restart deployment runtime-extension-controller-manager -n "${VKS_NS}" 2>/dev/null; then
-            pass "runtime-extension-controller-manager restart initiated"
-        else
-            fail "Failed to restart runtime-extension-controller-manager"
-        fi
-
-        echo "  3/3: Restarting capi-controller-manager..."
-        if kubectl rollout restart deployment capi-controller-manager -n "${VKS_NS}" 2>/dev/null; then
-            pass "capi-controller-manager restart initiated"
-        else
-            fail "Failed to restart capi-controller-manager"
-        fi
     else
-        # ── kubectl blocked — fall back to SSH into a CP VM ──
-        warn "kubectl blocked by admission webhook (expected from external context)"
-        info "Falling back to SSH into a Supervisor CP VM..."
-        echo ""
+        fail "Failed to restart vmware-system-tkg-webhook"
+    fi
 
-        if ensure_cp_vm_access; then
-            USE_SSH=true
-            info "Running restarts via SSH on ${CP_VM_CONNECTED}..."
-            echo ""
+    echo "  2/3: Restarting runtime-extension-controller-manager..."
+    if run_kubectl "kubectl rollout restart deployment runtime-extension-controller-manager -n ${VKS_NS}"; then
+        pass "runtime-extension-controller-manager restart initiated"
+    else
+        fail "Failed to restart runtime-extension-controller-manager"
+    fi
 
-            RESTART_CMD="kubectl rollout restart deployment vmware-system-tkg-webhook -n ${VKS_NS} && \
-kubectl rollout restart deployment runtime-extension-controller-manager -n ${VKS_NS} && \
-kubectl rollout restart deployment capi-controller-manager -n ${VKS_NS}"
-
-            if run_on_cp_vm "${RESTART_CMD}"; then
-                pass "All three controller restarts initiated via SSH"
-            else
-                fail "SSH restart command failed"
-            fi
-        else
-            fail "Cannot apply fix — neither kubectl nor SSH access available"
-            echo ""
-            warn "Manual fix required via vCenter Console:"
-            warn "  1. In vCenter: Hosts and Clusters -> find a SupervisorControlPlaneVM"
-            warn "  2. Open Console (Launch Web Console)"
-            warn "  3. Login: root / (use --get-password to retrieve)"
-            warn "  4. Run:"
-            warn "     kubectl rollout restart deployment vmware-system-tkg-webhook -n ${VKS_NS}"
-            warn "     kubectl rollout restart deployment runtime-extension-controller-manager -n ${VKS_NS}"
-            warn "     kubectl rollout restart deployment capi-controller-manager -n ${VKS_NS}"
-        fi
+    echo "  3/3: Restarting capi-controller-manager..."
+    if run_kubectl "kubectl rollout restart deployment capi-controller-manager -n ${VKS_NS}"; then
+        pass "capi-controller-manager restart initiated"
+    else
+        fail "Failed to restart capi-controller-manager"
     fi
 
     echo ""
@@ -797,18 +762,15 @@ kubectl rollout restart deployment capi-controller-manager -n ${VKS_NS}"
         divider
 
         # Re-check VariablesReconciled after restart
-        NEW_VARS=""
-        if $USE_SSH; then
-            NEW_VARS=$(run_on_cp_vm "kubectl get clusterclass ${CC_VERSION} -n ${CC_PUBLIC_NS} -o jsonpath='{.status.conditions}'" 2>/dev/null || echo "")
-        else
-            NEW_VARS=$(kubectl get clusterclass "${CC_VERSION}" -n "${VKS_NS}" -o jsonpath='{.status.conditions}' 2>/dev/null || \
-                       kubectl get clusterclass "${CC_VERSION}" -n "${CC_PUBLIC_NS}" -o jsonpath='{.status.conditions}' 2>/dev/null || \
-                       echo "")
-        fi
+        NEW_VARS=$(run_kubectl "kubectl get clusterclass ${CC_VERSION} -n ${CC_PUBLIC_NS} -o jsonpath='{.status.conditions}'" 2>/dev/null || echo "")
 
         NEW_VARS_STATUS="Unknown"
-        if [[ -n "${NEW_VARS}" ]] && command -v jq &>/dev/null; then
-            NEW_VARS_STATUS=$(echo "${NEW_VARS}" | jq -r '.[] | select(.type=="VariablesReconciled") | .status' 2>/dev/null || echo "Unknown")
+        if [[ -n "${NEW_VARS}" ]]; then
+            if command -v jq &>/dev/null; then
+                NEW_VARS_STATUS=$(echo "${NEW_VARS}" | jq -r '.[] | select(.type=="VariablesReconciled") | .status' 2>/dev/null || echo "Unknown")
+            else
+                NEW_VARS_STATUS=$(echo "${NEW_VARS}" | grep -oP '"type":"VariablesReconciled".*?"status":"[^"]*"' | grep -oP 'status":"[^"]*' | cut -d'"' -f2 || echo "Unknown")
+            fi
         fi
 
         if [[ "${NEW_VARS_STATUS}" != "True" ]]; then
@@ -818,32 +780,17 @@ kubectl rollout restart deployment capi-controller-manager -n ${VKS_NS}"
             info "Deleting stale cert secret to force regeneration..."
             echo ""
 
-            if $USE_SSH; then
-                CERT_CMD="kubectl delete secret runtime-extension-webhook-service-cert -n ${VKS_NS} 2>/dev/null; \
-kubectl rollout restart deployment runtime-extension-controller-manager -n ${VKS_NS} && \
-kubectl rollout restart deployment capi-controller-manager -n ${VKS_NS}"
+            echo "  Deleting runtime-extension-webhook-service-cert..."
+            run_kubectl "kubectl delete secret runtime-extension-webhook-service-cert -n ${VKS_NS}" && \
+                pass "Certificate secret deleted" || warn "Could not delete cert secret (may not exist)"
 
-                if run_on_cp_vm "${CERT_CMD}"; then
-                    pass "Certificate deleted and controllers re-restarted via SSH"
-                else
-                    fail "SSH cert remediation failed"
-                fi
-            else
-                echo "  Deleting runtime-extension-webhook-service-cert..."
-                if kubectl delete secret runtime-extension-webhook-service-cert -n "${VKS_NS}" 2>/dev/null; then
-                    pass "Certificate secret deleted"
-                else
-                    warn "Could not delete cert secret (may not exist)"
-                fi
+            echo "  Re-restarting runtime-extension-controller-manager..."
+            run_kubectl "kubectl rollout restart deployment runtime-extension-controller-manager -n ${VKS_NS}" && \
+                pass "runtime-extension-controller-manager restart initiated" || fail "Failed to restart"
 
-                echo "  Re-restarting runtime-extension-controller-manager..."
-                kubectl rollout restart deployment runtime-extension-controller-manager -n "${VKS_NS}" 2>/dev/null
-                pass "runtime-extension-controller-manager restart initiated"
-
-                echo "  Re-restarting capi-controller-manager..."
-                kubectl rollout restart deployment capi-controller-manager -n "${VKS_NS}" 2>/dev/null
-                pass "capi-controller-manager restart initiated"
-            fi
+            echo "  Re-restarting capi-controller-manager..."
+            run_kubectl "kubectl rollout restart deployment capi-controller-manager -n ${VKS_NS}" && \
+                pass "capi-controller-manager restart initiated" || fail "Failed to restart"
 
             echo ""
             info "Waiting 30 seconds for cert regeneration and rollout..."
@@ -857,36 +804,24 @@ kubectl rollout restart deployment capi-controller-manager -n ${VKS_NS}"
     header "Post-Fix Verification"
     echo ""
 
-    if $USE_SSH; then
-        echo "  Deployment status in ${VKS_NS} (via SSH):"
-        run_on_cp_vm "kubectl get deployments -n ${VKS_NS}" || warn "Could not get deployments"
-        echo ""
+    VIA_LABEL=""
+    $USE_SSH && VIA_LABEL=" (via SSH)"
 
-        echo "  ClusterClass conditions (via SSH):"
-        COND_OUTPUT=$(run_on_cp_vm "kubectl get clusterclass ${CC_VERSION} -n ${CC_PUBLIC_NS} -o jsonpath='{.status.conditions}'" 2>/dev/null || echo "")
-        if [[ -n "${COND_OUTPUT}" ]] && command -v jq &>/dev/null; then
-            echo "${COND_OUTPUT}" | jq '.' 2>/dev/null || echo "${COND_OUTPUT}"
-        else
-            echo "  ${COND_OUTPUT:-"(could not retrieve)"}"
-        fi
-        echo ""
+    echo "  Deployment status in ${VKS_NS}${VIA_LABEL}:"
+    run_kubectl "kubectl get deployments -n ${VKS_NS}" || warn "Could not get deployments"
+    echo ""
 
-        echo "  Clusters (via SSH):"
-        run_on_cp_vm "kubectl get clusters -A" || warn "Could not get clusters"
+    echo "  ClusterClass conditions${VIA_LABEL}:"
+    COND_OUTPUT=$(run_kubectl "kubectl get clusterclass ${CC_VERSION} -n ${CC_PUBLIC_NS} -o jsonpath='{.status.conditions}'" 2>/dev/null || echo "")
+    if [[ -n "${COND_OUTPUT}" ]] && command -v jq &>/dev/null; then
+        echo "${COND_OUTPUT}" | jq '.' 2>/dev/null || echo "${COND_OUTPUT}"
     else
-        echo "  Deployment status in ${VKS_NS}:"
-        kubectl get deployments -n "${VKS_NS}" 2>/dev/null
-        echo ""
-
-        echo "  ClusterClass conditions:"
-        kubectl get clusterclass "${CC_VERSION}" -n "${CC_PUBLIC_NS}" -o jsonpath='{.status.conditions}' 2>/dev/null | jq '.' 2>/dev/null || \
-            kubectl get clusterclass "${CC_VERSION}" -n "${CC_PUBLIC_NS}" -o jsonpath='{.status.conditions}' 2>/dev/null || \
-            echo "  (could not retrieve)"
-        echo ""
-
-        echo "  Clusters:"
-        kubectl get clusters -A 2>/dev/null
+        echo "  ${COND_OUTPUT:-"(could not retrieve)"}"
     fi
+    echo ""
+
+    echo "  Clusters${VIA_LABEL}:"
+    run_kubectl "kubectl get clusters -A" || warn "Could not get clusters"
     echo ""
 
     info "If cluster creation still fails, wait a few more minutes for the cache to fully refresh."
