@@ -14,6 +14,7 @@ cd ~/Documents/Lab
 unzip ~/Downloads/vksdemo-main.zip
 ls ~/Documents/Lab/vksdemo-main/vksexpdaylab/
 wget https://packages.broadcom.com/artifactory/vcf-distro/vcf-cli/linux/amd64/v9.0.0/vcf-cli.tar.gz
+sudo snap install kubectl --classic
 tar -xvf vcf-cli.tar.gz
 sudo mv vcf-cli-linux_amd64 /usr/local/bin/vcf
 
