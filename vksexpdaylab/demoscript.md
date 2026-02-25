@@ -22,7 +22,7 @@ openssl s_client -showcerts -connect auto-a.site-a.vcf.lab:443 </dev/null 2>/dev
 
 vcf context create vcfa \
   --endpoint auto-a.site-a.vcf.lab \
-  --api-token 9Xe3ytybpyI2QbRhU8keQtB9NDGykYTt \
+  --api-token <your_token_here> \
   --tenant-name showcase-all-apps \
   --ca-certificate vcfa-cert-chain.pem
 ```
