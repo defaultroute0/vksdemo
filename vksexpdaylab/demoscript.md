@@ -317,14 +317,13 @@ Once `guest-cluster03` upgrade completes (check VCFA Consumer Portal or `vcf clu
 1. **VCFA Consumer Portal** → your project → click on `guest-cluster03` → **Download Kubeconfig**
 2. Save it to `~/Downloads/guest-cluster03-kubeconfig.yaml`
 
-OR
+OR use break-glass admin kubeconfig
 
 ```bash
 vcf context use supervisor:$DEV_NS
 kubectl get secret guest-cluster03-kubeconfig -o jsonpath='{.data.value}' | /usr/bin/base64 -d > ~/Downloads/guest-cluster03-kubeconfig.yaml
 ```
-
-Use it directly:
+and use it directly:
 
 ```bash
 vcf context use supervisor:$DEV_NS
@@ -341,13 +340,13 @@ kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get svc -n shop
 ```
 or
 
-create a context
+create more secure to use short lived token based authentication services via vcfa
 ```
 vcf cluster kubeconfig get guest-cluster03 --export-file ~/.kube/config
 vcf context create guest-cluster03   --kubeconfig ~/.kube/config   --kubecontext vcf-cli-guest-cluster03-demo-namespace-vkrcg@guest-cluster03-demo-namespace-vkrcg
 ```
 
-Show what a valilla cluster includes:
+Show what a vanilla cluster includes:
 - k8s controllers, and core packages: storage drivers, auth, cni, velero, secret management, security patches and CVE's
 
 ```bash
