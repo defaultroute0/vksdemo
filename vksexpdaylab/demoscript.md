@@ -15,6 +15,15 @@ unzip ~/Downloads/vksdemo-main.zip
 ls ~/Documents/Lab/vksdemo-main/vksexpdaylab/
 wget https://packages.broadcom.com/artifactory/vcf-distro/vcf-cli/linux/amd64/v9.0.0/vcf-cli.tar.gz
 sudo snap install kubectl --classic
+alias k=kubectl
+alias kg="kubectl get"
+alias kd="kubectl describe"
+alias kaf="kubectl apply -f"
+alias kc="kubectl create"
+alias kdel="kubectl delete --force"
+alias ke="kubectl edit"
+alias kr="kubectl run"
+export do="--dry-run=client -oyaml"
 tar -xvf vcf-cli.tar.gz
 sudo mv vcf-cli-linux_amd64 /usr/local/bin/vcf
 
