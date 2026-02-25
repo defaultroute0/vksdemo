@@ -339,6 +339,13 @@ kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml label ns shoppi
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml apply -f ~/Documents/Lab/vksdemo-main/shopping.yaml -n shopping
 kubectl --kubeconfig ~/Downloads/guest-cluster03-kubeconfig.yaml get svc -n shopping
 ```
+or
+
+create a context
+```
+vcf cluster kubeconfig get guest-cluster03 --export-file ~/.kube/config
+vcf context create guest-cluster03   --kubeconfig ~/.kube/config   --kubecontext vcf-cli-guest-cluster03-demo-namespace-vkrcg@guest-cluster03-demo-namespace-vkrcg
+```
 
 Show what a valilla cluster includes:
 - k8s controllers, and core packages: storage drivers, auth, cni, velero, secret management, security patches and CVE's
