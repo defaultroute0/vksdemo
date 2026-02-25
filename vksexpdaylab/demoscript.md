@@ -6,13 +6,25 @@
 
 1. Open Firefox and navigate to: `https://github.com/defaultroute0/vksdemo`
 2. Click the green **Code** button → **Download ZIP**
-3. Save to `~/Downloads/`
+3. Save to `~/Documents/Lab
 4. Extract to the Lab directory:
 
 ```bash
 cd ~/Documents/Lab
 unzip ~/Downloads/vksdemo-main.zip
 ls ~/Documents/Lab/vksdemo-main/vksexpdaylab/
+wget https://packages.broadcom.com/artifactory/vcf-distro/vcf-cli/linux/amd64/v9.0.0/vcf-cli.tar.gz
+tar -xvf vcf-cli.tar.gz
+sudo mv vcf-cli-linux_amd64 /usr/local/bin/vcf
+
+openssl s_client -showcerts -connect auto-a.site-a.vcf.lab:443 </dev/null 2>/dev/null \
+| openssl x509 -outform PEM > vcfa-cert-chain.pem
+
+vcf context create vcfa \
+  --endpoint auto-a.site-a.vcf.lab \
+  --api-token 9Xe3ytybpyI2QbRhU8keQtB9NDGykYTt \
+  --tenant-name showcase-all-apps \
+  --ca-certificate vcfa-cert-chain.pem
 ```
 
 You should see: `guest-cluster03.yaml`, `oc-mysql2.yaml`, `complete-cluster-example.yaml`, `setup.sh`, `teardown.sh`, etc.
